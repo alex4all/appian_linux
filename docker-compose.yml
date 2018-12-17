@@ -118,8 +118,8 @@ services:
     build:
       context: ./build-files
       dockerfile: ./appian-base/Dockerfile
-      # args: # For dev purposes, to uniquely identify this "args" from the others in this file
-        # - APPIAN_USER_ID=<uid of the 'appian' user on host machine if Linux, 9999 for Windows/Mac>
+      args:
+        - APPIAN_USER_ID=1002
     container_name: base
 
   rdbms:
