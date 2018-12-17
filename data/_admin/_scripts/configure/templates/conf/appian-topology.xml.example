@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  To override the default topology configuration:
+  Create a file named appian-topology.xml
+
+  Below are some examples of topology configurations
+  that can be used.
+-->
+
+
+<!--
+  DEFAULT TOPOLOGY
+
+  Starting from the base port, each engine takes the next two consecutive
+  ports, one for the gateway, the other one for the database.
+  In this case, forums will take 5000 for the gateway and 5001 for the db.
+  Notify will take 5002 for the gateway and 5003 for the db, and so on.
+  The gateway id are automatically inferred if not explicitly defined as an
+  attribute on the engine elements.
+
+  The default topology has a single search server listening on port 9300.
+  The ports for the search server nodes in the search cluster are independent
+  of the ports allocated for the engines.
+-->
+
+<topology port="5000">
+  <server host="localhost">
+    <engine name="forums"/>
+    <engine name="notify"/>
+    <engine name="notify-email"/>
+    <engine name="channels"/>
+    <engine name="content"/>
+    <engine name="collaboration-statistics"/>
+    <engine name="personalization"/>
+    <engine name="portal"/>
+    <engine name="process-design"/>
+    <engine name="process-analytics0"/>
+    <engine name="process-analytics1"/>
+    <engine name="process-analytics2"/>
+    <engine name="process-execution0"/>
+    <engine name="process-execution1"/>
+    <engine name="process-execution2"/>
+  </server>
+  <search-cluster>
+    <search-server host="localhost" port="9300"/>
+  </search-cluster>
+  <kafkaCluster>
+    <broker host="localhost" port="9092"/>
+  </kafkaCluster>
+  <zookeeperCluster>
+    <zookeeper host="localhost" port="2181"/>
+  </zookeeperCluster>
+  <data-server-cluster>
+    <data-server host="localhost" port="5400" rts-count="1"/>
+  </data-server-cluster>
+</topology>
+
+<!--
+  HIGH-AVAILABILITY TOPOLOGY
+  
+  This example illustrates a topology for a basic 
+  high-availability configuration.  It requires 3 servers, but 
+  "machine3.domain.tld" does not have as high of a memory load 
+  as machine1.domain.tld and machine2.domain.tld.
+
+  * 2 Nodes for Each Engine
+  * 3 Node Search Cluster
+  * 3 Node Kafka Cluster
+  * 3 Node Zookeeper Cluster
+
+  This topology is not supported in Windows environments, where only one
+  instance of any service is allowed.
+
+  Please make sure not to use "localhost" when distributing
+  the application across different machines. 
+-->
+<!--
+<topology port="5000">
+  <server host="machine1.domain.tld">
+    <engine name="forums"/>
+    <engine name="notify"/>
+    <engine name="notify-email"/>
+    <engine name="channels"/>
+    <engine name="content"/>
+    <engine name="collaboration-statistics"/>
+    <engine name="personalization"/>
+    <engine name="portal"/>
+    <engine name="process-design"/>
+    <engine name="process-analytics0"/>
+    <engine name="process-analytics1"/>
+    <engine name="process-analytics2"/>
+    <engine name="process-execution0"/>
+    <engine name="process-execution1"/>
+    <engine name="process-execution2"/>
+  </server>
+  <server host="machine2.domain.tld">
+    <engine name="forums"/>
+    <engine name="notify"/>
+    <engine name="notify-email"/>
+    <engine name="channels"/>
+    <engine name="content"/>
+    <engine name="collaboration-statistics"/>
+    <engine name="personalization"/>
+    <engine name="portal"/>
+    <engine name="process-design"/>
+    <engine name="process-analytics0"/>
+    <engine name="process-analytics1"/>
+    <engine name="process-analytics2"/>
+    <engine name="process-execution0"/>
+    <engine name="process-execution1"/>
+    <engine name="process-execution2"/>
+  </server>
+  <search-cluster>
+    <search-server host="machine1.domain.tld" port="9301"/>
+    <search-server host="machine2.domain.tld" port="9302"/>
+    <search-server host="machine3.domain.tld" port="9303"/>
+  </search-cluster>
+  <kafkaCluster>
+    <broker host="machine1.domain.tld" port="9092"/>
+    <broker host="machine2.domain.tld" port="9092"/>
+    <broker host="machine3.domain.tld" port="9092"/>
+  </kafkaCluster>
+  <zookeeperCluster>
+    <zookeeper host="machine1.domain.tld" port="2181"/>
+    <zookeeper host="machine2.domain.tld" port="2181"/>
+    <zookeeper host="machine3.domain.tld" port="2181"/>
+  </zookeeperCluster>
+  <data-server-cluster>
+    <data-server host="machine1.domain.tld" port="5400" rts-count="1"/>
+  </data-server-cluster>
+</topology>
+-->

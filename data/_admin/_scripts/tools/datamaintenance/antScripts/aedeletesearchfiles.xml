@@ -1,0 +1,223 @@
+<project name="File deletion and backup" default="default" basedir="."> 
+
+ <!-- antcontrib tasks -->
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+                <pathelement location="../lib/ant-contrib-1.0b1.jar"/>
+        </classpath>
+  </taskdef>
+  <!-- appian custom task to get sorted and filtered kdb list -->
+<taskdef name="sortedfilelist" classname="com.appiancorp.cm.datamaintenance.SortedFileList">
+        <classpath>
+                <pathelement location="../lib/appian-anttasks.jar"/>
+        </classpath>
+</taskdef>
+  <!-- appian custom task to get server subdirectory - useful to delete kdbs in corresponding directory path in target -->
+<taskdef name="aeserversubdir" classname="com.appiancorp.cm.datamaintenance.AEServerSubDir">
+        <classpath>
+                <pathelement location="../lib/appian-anttasks.jar"/>
+        </classpath>
+</taskdef>
+
+ <property environment="env"/>
+  <!-- Java Home will be used for running Java interpreter with jspc class, and for compiling translated jsps -->
+  <property name="ant.home"	     location="${env.ANT_HOME}"/>
+  <!-- AE installation location -->
+  <property name="ae.searchdir"     value="search" />
+  <property name="ae.source.location"  value="" />
+  <property name="ae.search.location"  value="${ae.source.location}${file.separator}_admin${file.separator}${ae.searchdir}${file.separator}data" />
+  <property name="ae.datadelete"  value="y" />
+  <property name="archive.status"  value="n" />
+  <property name="ae.searchfile.suffixes" value="*COLLAB.txt,*FORUMS.txt,*GROUPS.txt,*PORTAL.txt" />
+  <property name="searchindextxt.high"  value="n" />
+  <property name="searchindextxt.num"  value="-1" />
+  <property name="searchindextxt.invertselect"  value="n" />
+  <property name="batchmode"    value="n" />
+
+<target name="default" description="Determine if the script should run in batch or interactive mode">
+
+<if>
+<equals arg1="n" arg2="${batchmode}"/>
+<then>
+	<antcall target="interactive" inheritall="true"/>
+</then>
+<else>
+	<antcall target="batch" inheritall="true"/>
+</else>
+</if>
+
+</target>
+
+<target name="interactive" description="Ask user what tasks thay want to do">
+<echo message="This script deletes AE4.1 search indexer's intermediate files"/>	
+	<echo message=""/>	
+<input message="Please enter the root location of source AE installation (for example, c:/ae41)"
+       addproperty="ae.source.location.input"
+ />
+
+<propertycopy name="ae.source.location" from="ae.source.location.input" override="yes" />
+<echo message="Source AE installation location is ${ae.source.location}"/>
+<echo message=""/>
+<input message="Would you like to clean old, unused intermediate search indexing files from Appian Enterprise? If you answer yes, additional information will be asked for before cleanup operation. "
+       validargs="y,n"
+       addproperty="ae.datadelete.input"
+       defaultvalue="y"
+ />
+<propertycopy name="ae.datadelete" from="ae.datadelete.input" override="yes"  />
+
+<if>
+    <equals arg1="y" arg2="${ae.datadelete}"/>
+    <then>
+	<echo message=""/>
+
+	<input message="Do you want to delete lowest numbered intermediate search files (for example 0_PORTAL.txt, 0_COLLAB.txt...)? Answering no will select highest numbered intermediate search files " 
+	addproperty="searchindextxt.high.input"
+	validargs="y,n"
+	defaultvalue="n" />
+
+	<propertycopy name="searchindextxt.high" from="searchindextxt.high.input" override="yes" />
+	<echo message=""/>
+	<input message="How many intermediate search files do you want to delete? -1 will select all."
+	 addproperty="searchindextxt.num.input"
+	 defaultvalue="-1" />
+
+	<propertycopy name="searchindextxt.num" from="searchindextxt.num.input" override="yes" />
+	<echo message=""/>
+	<input message="You can do inverse selection of all but the files specified before (useful to select for example, all but top 5 intermediate search files). If you answer yes, inverse selection will be done instead "
+	addproperty="searchindextxt.invertselect.input"
+	validargs="y,n"
+	defaultvalue="n" />
+
+	<propertycopy name="searchindextxt.invertselect" from="searchindextxt.invertselect.input" override="yes" />
+
+	<if>
+    		<equals arg1="n" arg2="${searchindextxt.high}"/>
+    	<then>
+		<property name="searchindextxt.descending" value="true"/>
+	</then>
+
+	<else>
+		<property name="searchindextxt.descending" value="false"/>
+	</else>
+	</if>
+
+
+	<if>
+    		<equals arg1="y" arg2="${searchindextxt.invertselect}"/>
+    	<then>
+		<property name="searchindextxt.rest" value="true"/>
+	</then>
+
+	<else>
+		<property name="searchindextxt.rest" value="false"/>
+	</else>
+	</if>
+	
+	<!-- Set search index directory through property copy. AE source location wasn't set at initialization. So, search index directory needs to be reset -->
+	<property name="ae.search.location.input"  value="${ae.source.location}${file.separator}_admin${file.separator}${ae.searchdir}${file.separator}data"/>
+	<propertycopy name="ae.search.location" from="ae.search.location.input" override="yes" />
+
+
+	<!-- delete search index .txt files from target AE installation -->
+	<antcall target="deletedata" inheritAll="true"/>
+
+    </then>
+</if>
+</target>
+
+
+<target name="batch" description="Execute tasks specified in batch mode">
+
+
+<echo message="Source AE installation location is ${ae.source.location}"/>
+
+<if>
+    <equals arg1="y" arg2="${ae.datadelete}"/>
+    <then>
+
+	<if>
+    		<equals arg1="n" arg2="${searchindextxt.high}"/>
+    	<then>
+		<property name="searchindextxt.descending" value="true"/>
+	</then>
+
+	<else>
+		<property name="searchindextxt.descending" value="false"/>
+	</else>
+	</if>
+
+
+	<if>
+    		<equals arg1="y" arg2="${searchindextxt.invertselect}"/>
+    	<then>
+		<property name="searchindextxt.rest" value="true"/>
+	</then>
+
+	<else>
+		<property name="searchindextxt.rest" value="false"/>
+	</else>
+	</if>
+	
+
+	<!-- Delete kdbs from target AE installation after above backup to ensure that copied kdbs are loaded -->
+
+	<!-- delete kdbs and other data files to target AE installation -->
+	<antcall target="deletedata" inheritAll="true"/>
+
+    </then>
+</if>
+</target>
+
+
+
+
+<target name="deletedata" description="Delete search .txt files from specified installation">
+
+
+<!-- delete the search files with suffixes specified in ae.searchfile.suffixes -->
+
+<foreach list="${ae.searchfile.suffixes}"  delimiter="," param="searchsuffix" target="deleteSearchFiles" trim="true" inheritall="true">
+</foreach>
+
+
+</target>
+
+
+<target name="deleteSearchFiles" description="Delete the specified search .txt files">
+
+
+<if>
+<!-- if no search suffix is set, do nothing -->
+<equals arg1="" arg2="${searchsuffix}"/>
+<then>
+<echo message="No search file patterns set. So, no search flat files will be deleted" />
+</then>
+<else>
+<path id="kdblist">
+<fileset dir="${ae.search.location}" includes="${searchsuffix}"/>
+</path>
+</else>
+</if>
+
+<property name="searchindextxt.list" refid="kdblist"/>
+
+
+
+<sortedfilelist name="sortedSearchFileList" filelist="${searchindextxt.list}" descending="${searchindextxt.descending}" rest="${searchindextxt.rest}" numberOfFiles="${searchindextxt.num}"/>
+
+<!-- make sure that sortedfilelist is not empty otherwise fileset would end up including everything -->
+
+<if>
+<equals arg1="" arg2="${sortedSearchFileList}"/>
+<then>
+<!-- do nothing as no selections were made -->
+</then>
+<else>
+<delete verbose="true">
+	<fileset dir="${ae.search.location}" includes="${sortedSearchFileList}"/>
+</delete>
+</else>
+</if>
+</target>
+
+</project>

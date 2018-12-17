@@ -1,0 +1,12 @@
+<app-config>
+  <process>
+    <archiving>
+      <filename_prefix>process</filename_prefix>
+      <filename_suffix>.l</filename_suffix>
+      <store max_entries="32000">
+        <!-- <partition> THIS MUST BE AN ABSOLUTE PATH/$(TABLESPACE)/archived-process/ </partition> -->
+        <partition>$(AE_SVR)/archived-process/</partition>
+      </store>
+    </archiving>
+  </process> 
+</app-config>

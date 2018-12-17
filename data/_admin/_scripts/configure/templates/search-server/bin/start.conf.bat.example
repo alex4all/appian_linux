@@ -1,0 +1,16 @@
+rem Copy this file to start.conf.bat and delete the "rem" comment markers of the variables to enable.
+rem
+rem This file may be edited to override settings from start.bat
+
+rem Default search server memory settings.  The value here will override the default value set in start.bat.
+rem Heap size should be no larger than 1/2 system memory. Do not set heap size larger than 30 GB.
+rem Xms and Xmx values should be the same to prevent costly heap resizing.
+rem set SS_MEM_ARGS=-Xms1024m -Xmx1024m
+
+rem set SS_GC_ARGS=-XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly
+rem set SS_OTHER_ARGS=-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Duser.timezone=GMT
+
+rem Any custom java options can be added here.
+rem These will be added to the other SS_JAVA_OPTS passed to the command that starts the search server.
+rem Do not add any properties that are already defined above or in start.bat.
+rem set SS_CUSTOM_OPTS=

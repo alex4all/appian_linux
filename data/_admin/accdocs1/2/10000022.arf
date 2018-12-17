@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appian-report-file>
+  <baseFilters>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+      <apply>false</apply>
+      <dayCount>0.0</dayCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+      <apply>false</apply>
+      <completedCount>0</completedCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+      <apply>false</apply>
+      <standardDeviationCount>0.0</standardDeviationCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+      <apply>false</apply>
+    </baseFilter>
+  </baseFilters>
+  <batchSize>25</batchSize>
+  <columns>
+    <column>
+      <drillPath>
+        <enabled>true</enabled>
+        <expression>=tp!id</expression>
+        <linkType>2</linkType>
+      </drillPath>
+      <expression>=tp!display</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>0</localId>
+      <name>##!active_tasks.column.name</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=tp!starttime</expression>
+      <formatToken>datetime</formatToken>
+      <group>false</group>
+      <lastFormatToken>datetime</lastFormatToken>
+      <localId>2</localId>
+      <name>##!active_tasks.column.received</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=tp!priority</expression>
+      <formatToken>priorityicons</formatToken>
+      <group>false</group>
+      <lastFormatToken>priorityicons</lastFormatToken>
+      <localId>4</localId>
+      <name>##!active_tasks.column.priority</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>true</enabled>
+        <expression>=pp!id</expression>
+        <linkType>7</linkType>
+      </drillPath>
+      <expression>=pp!name</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>3</localId>
+      <name>##!active_tasks.column.process</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>true</enabled>
+        <expression>=pp!id</expression>
+        <linkType>1</linkType>
+      </drillPath>
+      <expression>=task_status()</expression>
+      <formatToken>taskstatus</formatToken>
+      <group>false</group>
+      <lastFormatToken>##!active_tasks.column.status</lastFormatToken>
+      <localId>5</localId>
+      <name>Status</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=tp!deadline</expression>
+      <formatToken>datetime</formatToken>
+      <group>false</group>
+      <lastFormatToken>datetime</lastFormatToken>
+      <localId>7</localId>
+      <name>##!active_tasks.column.task_deadline</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=tp!assignees</expression>
+      <formatToken>people</formatToken>
+      <group>false</group>
+      <lastFormatToken>people</lastFormatToken>
+      <localId>8</localId>
+      <name>##!active_tasks.column.assigned_to</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=is_task_favorite()</expression>
+      <formatToken>booleans</formatToken>
+      <group>false</group>
+      <lastFormatToken>booleans</lastFormatToken>
+      <localId>9</localId>
+      <name>##!active_tasks.column.is_favorite</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=is_task_overdue()</expression>
+      <formatToken>booleans</formatToken>
+      <group>false</group>
+      <lastFormatToken>booleans</lastFormatToken>
+      <localId>10</localId>
+      <name>##!active_tasks.column.is_task_overdue</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=todate(local(tp!deadline))=todate(local(now()))</expression>
+      <formatToken>booleans</formatToken>
+      <group>false</group>
+      <lastFormatToken>booleans</lastFormatToken>
+      <localId>17</localId>
+      <name>##!active_tasks.column.due_today</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=tp!description</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>11</localId>
+      <name>##!active_tasks.column.task_description</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=Lag()</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>13</localId>
+      <name>##!active_tasks.column.lag</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=Work()</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>12</localId>
+      <name>##!active_tasks.column.work_time</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=pp!deadline</expression>
+      <formatToken>datetime</formatToken>
+      <group>false</group>
+      <lastFormatToken>datetime</lastFormatToken>
+      <localId>14</localId>
+      <name>##!active_tasks.column.process_deadline</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=task_avg_lag()</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>15</localId>
+      <name>##!active_tasks.column.avg_lag_time</name>
+      <show>false</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=task_avg_work()</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>16</localId>
+      <name>##!active_tasks.column.avg_work_time</name>
+      <show>false</show>
+    </column>
+  </columns>
+  <context />
+  <contextType>10</contextType>
+  <quickFilters>
+    <quickFilter>
+      <defaultItem>0</defaultItem>
+      <items>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.all</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>5</columnLocalId>
+              <comparison>5</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">2</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>5</columnLocalId>
+              <comparison>5</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">5</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>5</columnLocalId>
+              <comparison>5</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">7</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>5</columnLocalId>
+              <comparison>5</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">8</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.status.active</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>9</columnLocalId>
+              <comparison>4</comparison>
+              <constant>
+                <instanceType>26</instanceType>
+                <multiple>0</multiple>
+                <type>26</type>
+                <typeRef>
+                  <id>26</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">1</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.status.favorite</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>5</columnLocalId>
+              <comparison>4</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">1</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.status.accepted</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>5</columnLocalId>
+              <comparison>4</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">2</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.status.completed</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>5</columnLocalId>
+              <comparison>4</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">5</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.status.paused</name>
+        </item>
+      </items>
+      <name>##!active_tasks.quickfilter.status.name</name>
+      <selectedItem>1</selectedItem>
+    </quickFilter>
+    <quickFilter>
+      <defaultItem>0</defaultItem>
+      <items>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.all</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>4</columnLocalId>
+              <comparison>4</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">2</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.priority.high</name>
+        </item>
+      </items>
+      <name>##!active_tasks.quickfilter.priority.name</name>
+      <selectedItem>0</selectedItem>
+    </quickFilter>
+    <quickFilter>
+      <defaultItem>0</defaultItem>
+      <items>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.all</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>true</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.due.today</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>10</columnLocalId>
+              <comparison>4</comparison>
+              <constant>
+                <instanceType>26</instanceType>
+                <multiple>0</multiple>
+                <type>26</type>
+                <typeRef>
+                  <id>26</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">1</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!active_tasks.quickfilter.due.overdue</name>
+        </item>
+      </items>
+      <name>##!active_tasks.quickfilter.due.name</name>
+      <selectedItem>0</selectedItem>
+    </quickFilter>
+  </quickFilters>
+  <recursive>false</recursive>
+  <reportName>##!active_tasks</reportName>
+  <sortColumnLocalId>2</sortColumnLocalId>
+  <sortOrder>1</sortOrder>
+  <startIndex>0</startIndex>
+  <type>2</type>
+  <description>##!active_tasks.description</description>
+  <displayThresholds>false</displayThresholds>
+  <displayType>0</displayType>
+  <name>##!active_tasks</name>
+  <quickFilterDisplay>0</quickFilterDisplay>
+  <showLegend>true</showLegend>
+  <showQuickFiltersInToolbar>true</showQuickFiltersInToolbar>
+  <supportedTypes>
+    <supportedType>0</supportedType>
+    <supportedType>1</supportedType>
+    <supportedType>2</supportedType>
+    <supportedType>3</supportedType>
+  </supportedTypes>
+  <thresholdColumnLocalId>6</thresholdColumnLocalId>
+  <thresholdColumnName>##!active_tasks.thresholds.name</thresholdColumnName>
+  <thresholds>
+    <threshold>
+      <defaultIconName>indicatorgreen</defaultIconName>
+      <icon>9</icon>
+      <label>##!active_tasks.threshold.0.label</label>
+      <upperBound>20.0</upperBound>
+    </threshold>
+    <threshold>
+      <defaultIconName>indicatoryellow</defaultIconName>
+      <icon>11</icon>
+      <label>##!active_tasks.threshold.1.label</label>
+      <upperBound>50.0</upperBound>
+    </threshold>
+    <threshold>
+      <defaultIconName>indicatorred</defaultIconName>
+      <icon>10</icon>
+      <label>##!active_tasks.threshold.2.label</label>
+    </threshold>
+  </thresholds>
+  <useCustomToolbar>false</useCustomToolbar>
+  <useDefaultBarGraphXML>true</useDefaultBarGraphXML>
+  <useDefaultLineGraphXML>true</useDefaultLineGraphXML>
+  <useDefaultPieGraphXML>true</useDefaultPieGraphXML>
+</appian-report-file>
+

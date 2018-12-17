@@ -1,0 +1,309 @@
+####################### custom.properties example file ########################
+##                                                                           ##
+## NOTE: DO NOT simply rename this file custom.properties.                   ##
+##                                                                           ##
+## This file contains examples of entries for the custom.properties override ##
+## file.  The custom.properties file is not installed by default and must be ##
+## created in order to override the default value of a property.  Once       ##
+## present, the custom.properties file will not be overwritten by subsequent ##
+## upgrade installations.                                                    ##
+## The values given in this file are the default values of the configuration ##
+## properties. Override a property's default value by copying the relevant   ##
+## entry from this file and placing it in conf/custom.properties with a new  ##
+## value.  Properties that have no default have <PROVIDE A VALUE> listed as  ##
+## the value and must be given a value specific to your environment in order ##
+## to be used. All of the properties are commented with a single #.  You     ##
+## will have to uncomment the property and give it a value when you copy to  ##
+## custom.properties.                                                        ##
+##                                                                           ##
+## The most commonly configured properties are listed here.                  ##
+###############################################################################
+
+#################
+#### General ####
+#################
+
+## Specifying the scheme. Necessary when SSL is not performed at the app server
+## level but enabled at different layer.
+#conf.suite.SCHEME=https
+
+## Used by both App Server and Engines to build up base URLs for links
+#conf.suite.APPLICATION_CONTEXT=suite
+
+## Specify where Appian content is hosted. Values should be in the format
+## server:port. Do not specify the :port if the port is 80 and the SCHEME is
+## http, or the port is 443 and SCHEME is https. For security reasons, all
+## three server values must use different domains.
+## This is the hostname and port portion of the URL viewed by end users (e.g.,
+## in a browser, links in emails)
+#conf.suite.SERVER_AND_PORT=<PROVIDE A VALUE>:8080
+## This is the hostname and port portion of the URL used to serve user-uploaded
+## content (e.g., documents)
+#conf.suite.STATIC_SERVER_AND_PORT=<PROVIDE A VALUE>:8080
+## This is the hostname and port portion of the URL used to serve extensions
+#conf.suite.DYNAMIC_SERVER_AND_PORT=<PROVIDE A VALUE>:8080
+
+## The STATIC_PORTAL_CSS_SOURCE_URL, STATIC_FORMS_JS_SOURCE_URL, and
+## STATIC_PORTAL_JS_SOURCE_URL allow specifying an external host
+## for static javascript and CSS resources, to off-load rendering from
+## the main server.
+#conf.static.STATIC_PORTAL_CSS_SOURCE_URL=
+#conf.static.STATIC_FORMS_JS_SOURCE_URL=
+#conf.static.STATIC_PORTAL_JS_SOURCE_URL=
+
+## The BASE_PATH is the path to the directory that contains the accdocs*
+## directories referenced in server/_conf/partition.xml. Set this prior to
+## migration if upgrading from a previous version and the new installation is
+## in a different location on the file system from the previous installation.
+## NOTE: The path separator must be a forward slash ("/"), even if using
+## Windows.
+#conf.suite.BASE_PATH=
+
+## The location of the log files.
+#conf.suite.AE_LOGS=<install_dir>/logs
+
+## ID of the default home page that users see in the designer environment if
+## they do not have a custom home page
+#conf.suite.DEFAULT_HOME_PAGE_ID=0
+
+## Copyright statements can be overridden using the following properties.  The
+## copyright property allows overriding the entire statement or supports string
+## formatting using a param substitution syntax: %2$s, %3$s
+## The copyright statement appears as the footer of the designer and legacy
+## portal interfaces
+## Note that \u00A9 is the copyright symbol.
+#resources.appian.ap.application.appian.ap.copyright=\u00A9%2$s %3$s
+## The 2 substitution parameters can be individually overridden with the
+## the properties as follows:
+## %2$s - the copyright year
+#resources.appian.ap.application.appian.ap.copyrightYear=2003-<defaults to current year>
+## %3$s - the company name
+#resources.appian.ap.application.appian.ap.appianName=Appian Corporation
+
+###########################################
+#### Application Server Configurations ####
+###########################################
+## The initial and maximum sizes for the application server heap
+#conf.appserver.minHeapSize=2048m
+#conf.appserver.maxHeapSize=2048m
+
+###############
+#### Email ####
+###############
+
+## Sending Email
+## The address that will appear as the sender (the "From" address) of
+## notification and password reset emails from the system.
+## Defaults to appian-alerts@<serverdomain>
+#conf.mailhandler.ntf_sndr_addr=
+## The domain (portion after the "@") for the "from" email address for
+## addresses created via expressions functions; also applies to the domain
+## for alert emails when conf.mailhandler.ntf_sndr_addr is not set. Defaults to
+## the domain of the server.
+#conf.mailhandler.email.domain=
+## The host is the FQDN, hostname, or IP address of the SMTP server for sending
+## email from the system. Muliple SMTP servers can be specified using a comma-
+## separated list.  They will be tried in the order specified.  If a port
+## other than 25 is required, append it to the hostname (e.g., mailhost3:9025)
+## IMPORTANT: If this is not set, no email will be sent from the system.
+#conf.mailhandler.mail.smtp.host=<PROVIDE A VALUE>
+## The username used to connect to the SMTP server above.  Set
+## conf.mailhandler.mail.smtp.auth=true if user/password are used.  Leave the
+## default (false) to indicate that the SMTP server does not require
+## authentication. If multiple SMTP servers are defined above, the same auth
+## settings will apply to all servers
+#conf.mailhandler.mail.smtp.auth=false
+#conf.mailhandler.mail.user=
+## The protocol should be set to either smtp or smtps. The default value is smtp.
+#conf.mailhandler.mail.transport.protocol=smtp
+## You can enable or require starttls with the "smtp" protocol.  Setting
+## starttls.enable=true will cause outgoing mail to use STARTTLS if supported by
+## the remote server but will fall back to plain smtp otherwise.  Also setting
+## starttls.required=true will cause mail to fail if the remote server does not
+## support STARTTLS.
+#conf.mailhandler.mail.smtp.starttls.enable=false
+#conf.mailhandler.mail.smtp.starttls.required=false
+
+## Receiving Email - see documentation for configuration of custom.properties
+## Aliases can be used to route email sent to a particular email address to a
+## specified process model, process, or event.  They are of the form
+## conf.mailhandler.alias.<recipientName>=<routing> where <recipientName> is an
+## email account and <routing> is processmodeluuid, processmodelid, process,
+## or event followed by the corresponding id
+#conf.mailhandler.alias.HelpDeskRequest=processmodeluuid0004cedf-a045-8000-234b-c0a8031014c0
+## Defines settings for a poller that will monitor an inbox and route messages based on the alias rules
+#conf.mailhandler.poller.EmailHandlerBean.mailServer=<PROVIDE A VALUE>
+#conf.mailhandler.poller.EmailHandlerBean.mailFolder=INBOX
+#conf.mailhandler.poller.EmailHandlerBean.storeProtocol=imap
+#conf.mailhandler.poller.EmailHandlerBean.port=143
+#conf.mailhandler.poller.EmailHandlerBean.starttls=true
+#conf.mailhandler.poller.EmailHandlerBean.userName=
+#conf.mailhandler.poller.EmailHandlerBean.pollingInterval=5000
+#conf.mailhandler.poller.EmailHandlerBean.partialFetch=true
+#conf.mailhandler.poller.EmailHandlerBean.forceImapLogin=false
+#conf.mailhandler.poller.EmailHandlerBean.debug=false
+
+##########################
+#### Anonymous Access ####
+##########################
+
+## DEPRECATED: Set ANONYMOUS_ACCESS=true to receive email messages in process
+## start nodes. It also enables the use of the ANONYMOUS user.
+## Setting this property to true does NOT allow users to access the portal
+## anonymously. The property remains deprecated because it will be renamed in a
+## future release.
+#conf.suite.ANONYMOUS_ACCESS=false
+
+########################
+#### Single Sign-On ####
+########################
+
+## Refer to the documentation on configuring single sign-on through the Spring
+## Security framework.
+
+######################
+#### Data Capping ####
+######################
+
+## Data Output Truncation Constants define data truncation limits in
+## places where data output is capped (like in report cells).
+#conf.suite.DATA_TRUNC_SENTENCES=200
+
+## Notification data caps
+#conf.suite.ALERT_SUBJECT_LIMIT=150
+#conf.suite.ALERT_MESSAGE_LIMIT=1000
+
+###########################
+#### Process Execution ####
+###########################
+
+## The limit to the number of rows returned in the Database Access node
+#resources.appian.process.application.arv.limit=10
+
+## Whether or not automatic archiving of completed and canceled processes is
+## enabled.  1=enabled; 0=disabled
+#server.conf.exec.AUTOARCHIVE=1
+
+##################
+#### Analytics ###
+##################
+
+## Analytics Report Rows Cap
+## This number specifies the maximum number of items that can be loaded into
+## app server memory when processing a report.
+## It determines the last page that can be retrieved for a report:
+## last page = floor(maxreportrows/(number of analytics engines * number of rows per page))
+## In addition, this also determines the maximum number of rows that will be
+## included when a report is exported or printed.
+#resources.appian.analytics.application.maxreportrows=30000
+
+## Analytics Engine Timeout
+## How much time each analytics engine is allowed to take to process a request in
+## milliseconds. The report will time out if the request takes longer to process.
+#server.conf.processcommon.MAXIMUM_REPORT_MS=2000
+
+## Process Search: report used to display results of process searches
+## the value must be an alias defined in analytics-config(-*).xml
+#resources.appian.process.application.appian.process.process_search_report=all_processes
+
+######################
+#### Data Sources ####
+######################
+
+## Appian must have a dedicated data source. Set the value to the JNDI name of
+## the data source that will be used as the Appian data source.
+## Note: This data source must point to a separate tablespace than any listed
+## in the conf.data.datasources configuration.
+#conf.data.APPIAN_DATA_SOURCE=
+## Comma-separated list of JNDI names of data sources on the application server
+## that will be used to store business data.  This list is used by the Query
+## Database smart service and Data Stores.
+#conf.data.datasources=
+
+###################		
+#### Documents ####
+###################
+
+## The minimum allowed size for a document or a folder.
+#resources.appian.ac.collaboration.MINIMUM_DOCUMENT_NAME_LENGTH=4
+## The maximum allowed size in bytes for a document
+#resources.appian.ac.collaboration.MAX_UPLOAD_FILE_SIZE=1024000000
+## The group id of Collaboration Administrators
+#resources.appian.ac.collaboration.COLLABORATION_ADMINISTRATION_GROUP_ID=0
+## The number of Documents, Knowledge Center, or Folders that can be moved
+## simultaneously
+#resources.appian.ac.collaboration.MAX_NUMBER_MOVEABLE_OBJECTS=4
+## The number of megabytes to allocate to new users' quota for documents
+## uploaded to folders in Personal and Teams knowledge centers.  Changing the
+## value does not affect existing users.
+#server.conf.collaboration.DEFAULTSPACE=250
+## Whether documents can be downloaded with the Content-Disposition header set
+## to "inline" by using inline=true as a request parameter. This property must
+## be set to true in order to use PDF forms as task forms or to display the
+## contents of a file stored in Documents inline on a page in the web page
+## channel.
+#conf.content.download.inline=false
+
+#####################
+#### Query Rules ####
+#####################
+
+## The amount of memory in bytes that will be consumed in the application server
+## for a single query before the query is halted. Default is 1 MB.
+#conf.data.query.memory.limit=1048576
+## The amount of time in seconds that a query will wait for a response from the
+## database before timing out.
+#conf.data.query.timeout=10
+
+#############
+#### JMS ####
+#############
+
+## A list of client ids to use when connecting to the JMS provider, either
+## clientIds needs to be defined as a comma-separated list or both
+## clientIdPrefix and maxConnections must be defined
+#conf.jms.clientIds=
+#conf.jms.clientIdPrefix=CLIENT_
+#conf.jms.maxConnections=20
+## The name of the JMS topic or queue that contains messages destined for
+## process
+#conf.jms.processTopic=Process
+## Some JMS providers have a prefix before the topic of queue name, if needed
+## define that prefix here
+#conf.jms.topicPrefix=
+#conf.jms.queuePrefix=
+## If the JMS provider requires a username and password for connection, define
+## the username here and the password in passwords.properties
+
+##########################################################
+#### Web Services: Exposing Processes as Web Services ####
+##########################################################
+## By default process models exposed as a web service can be found at
+## SCHEME://SERVER_AND_PORT/APPLICATION_CONTEXT/webservice/processmodel/*?WSDL
+## If you want a different base URL (part before /webservice..) define that here
+## An application server or web server connected to the system must be listening
+#resources.appian.webservices.application.webservice.baseurl=
+
+###########################
+#### Web Services Node ####
+###########################
+
+## The following are properties that control the behavior of HTTP connections
+## made by the Call Web Service Node during service invocation.
+## Number of seconds to wait to establish a connection with a web service host
+#conf.node.webservice.connection.timeout=60
+## Once a connection is established, the number of seconds to wait for a
+## response to a request
+#conf.node.webservice.socket.timeout=60
+## Number of redirect responses (HTTP 304) the web service node will accept
+#conf.node.webservice.max.redirects=4
+
+##################
+#### Plug-ins ####
+##################
+
+## The plug-in loading poll interval is the maximum number of seconds that will
+## pass before loading a new plug-in after it is placed in the plugins
+## directory.  Setting the interval to 0 will cause hot deployment to be
+## disabled and deploying a new plug-in will require an app server restart.
+#conf.plugins.poll-interval=60

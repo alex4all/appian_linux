@@ -1,0 +1,386 @@
+<project name="File copying and backup" default="default" basedir=".">
+
+<!-- antcontrib tasks -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+<!-- appian custom task to get sorted and filtered kdb list -->
+<taskdef name="sortedfilelist" classname="com.appian.ant.datamaintenance.SortedFileList"/>
+
+<!-- appian custom task to get server subdirectory - useful to copy kdbs in corresponding directory path in target -->
+<taskdef name="aeserversubdir" classname="com.appian.ant.datamaintenance.AEServerSubDir"/>
+
+<taskdef name="try" classname="ise.antelope.tasks.TryTask"/>
+<taskdef name="ifAntelope"    classname="ise.antelope.tasks.IfTask"/>
+
+
+
+<!--######################-->
+<!-- Properties           -->
+<!--######################-->
+
+ <property environment="env"/>
+  <!-- Java Home will be used for running Java interpreter with jspc class, and for compiling translated jsps -->
+  <property name="ant.home"	     location="${env.ANT_HOME}"/>
+  <property name="kdb.bkupdir"  value="" />
+  <property name="kdb.del"  value="n" />
+  <property name="kdb.num"  value="2" />
+  <!-- AE installation location -->
+  <property name="ae.serverdir"     value="server" />
+  <property name="ae.admindir"     value="_admin" />
+  <property name="ae.msgdir"     value="msg" />
+  <property name="ae.archivedprocessdir"     value="archived-process" />
+  <property name="ae.source.location"  value="" />
+  <property name="ae.source.admindir"     value="${ae.source.location}${file.separator}${ae.admindir}" />
+  <property name="ae.dest.admindir"     value="${kdb.bkupdir}${file.separator}${ae.admindir}" />
+  <property name="ae.source.msgdir"     value="${ae.source.location}${file.separator}${ae.serverdir}${file.separator}${ae.msgdir}" />
+  <property name="ae.dest.msgdir"     value="${kdb.bkupdir}${file.separator}${ae.serverdir}${file.separator}${ae.msgdir}" />
+  <property name="ae.source.archivedprocessdir"     value="${ae.source.location}${file.separator}${ae.serverdir}${file.separator}${ae.archivedprocessdir}" />
+  <property name="ae.dest.archivedprocessdir"     value="${kdb.bkupdir}${file.separator}${ae.serverdir}${file.separator}${ae.archivedprocessdir}" />
+  <property name="kdb.high"  value="y" />
+  <property name="kdb.invertselect"  value="n" />
+  <property name="ae.copycontents"  value="n" />
+  <property name="batchmode"    value="n" />
+
+
+    <available file="${kdb.bkupdir}" property="isFileAvail"/>
+    <fail unless="isFileAvail" message="Target doesn't exist!"/>
+
+<target name="default" description="Determine if the script should run in batch or interactive mode">
+<try>
+    <var name="op1" value="12"/>
+    <var name="op" value="+"/>
+
+    <!-- demo plus -->
+    <math result="result" operand1="${op1}" operation="${op}" operand2="${kdb.num}" datatype="int"/>
+
+
+<catch>
+<echo message="Parameter is not an integer, please see --help."/>
+</catch>
+</try>
+<ifAntelope>
+	<bool>
+		<islessthan arg1="${kdb.num}" arg2="2"/>
+	</bool>
+		<fail message="Must keep at least 2 database files!"/>
+	<else>
+	</else>
+</ifAntelope>
+<if>
+<equals arg1="n" arg2="${batchmode}"/>
+<then>
+	<antcall target="interactive" inheritall="true"/>
+</then>
+<else>
+	<antcall target="batch" inheritall="true"/>
+</else>
+</if>
+
+</target>
+
+
+<target name="interactive" description="Ask user what tasks thay want to do">
+
+<echo message="This script copies AE5 kdbs and contents from one installation to another installation or a backup location"/>	
+<echo message=""/>	
+	<input message="Please enter the root location of source AE installation (for example, c:/ae50)"
+       	addproperty="ae.source.location.input"
+ 	/>
+	<propertycopy name="ae.source.location" from="ae.source.location.input" override="yes" />
+
+	<echo message="Source AE installation location is ${ae.source.location}"/>
+
+<echo message=""/>	
+
+	<input message="Please enter the root location of destination (AE installation or backup directory) where the data will be copied (for example, c:/ae50). If the directory doesn't exist, it will be created"
+       	addproperty="ae.dest.location.input"
+	/>
+	<propertycopy name="kdb.bkupdir" from="ae.dest.location.input" override="yes" />
+
+	<echo message=""/>	
+
+	<input message="Do you want to delete the kdbs in destination folder, if they exist, before copying. It is recommended to delete kdbs in destination before copying the data from source"
+       	addproperty="kdb.del.input"
+	validargs="y,n"
+	defaultvalue="y"
+	/>
+	<propertycopy name="kdb.del" from="ae.datadelete.input" override="yes" />
+<echo message=""/>	
+	<input message="Do you want to copy highest numbered kdbs? Answering no will select lowest numbered kdbs " 
+	addproperty="kdb.high.input"
+	validargs="y,n"
+	defaultvalue="y" />
+	
+	<propertycopy name="kdb.high" from="kdb.high.input" override="yes" />
+<echo message=""/>	
+	<input message="How many kdbs do you want to copy? -1 will select all."
+	 addproperty="kdb.num.input"
+	 defaultvalue="-1" />
+	
+	<propertycopy name="kdb.num" from="kdb.num.input" override="yes" />
+
+	<echo>${kdb.num} kdbs will be selected </echo>
+<echo message=""/>		
+	<input message="You can do inverse selection of all but the kdbs specified before (useful to select for example, all but top 5 kdbs). If you answer yes (y), inverse selection will be done instead "
+	addproperty="kdb.invertselect.input"
+	validargs="y,n"
+	defaultvalue="n" />
+	<propertycopy name="kdb.invertselect" from="kdb.invertselect.input" override="yes" />
+<echo message=""/>	
+	<input message="Do you want to copy AE contents (collaboration, Process Model XML, process notes, search index, archived processes and discussion forum message files)?  If you answer yes (y), the contents will be copied to destination "
+	addproperty="ae.copycontents.input"
+	validargs="y,n"
+	defaultvalue="n" />
+	<propertycopy name="ae.copycontents" from="ae.copycontents.input" override="yes" />
+
+
+
+	<if>
+    		<equals arg1="y" arg2="${kdb.high}"/>
+    	<then>
+		<property name="kdb.descending" value="true"/>
+	</then>
+
+	<else>
+		<property name="kdb.descending" value="false"/>
+	</else>
+	</if>
+
+
+	<if>
+    		<equals arg1="y" arg2="${kdb.invertselect}"/>
+    	<then>
+		<property name="kdb.rest" value="true"/>
+	</then>
+
+	<else>
+		<property name="kdb.rest" value="false"/>
+	</else>
+	</if>
+	
+
+
+       
+	<!-- Delete kdbs from target AE installation if option selected -->
+	<if>
+	<equals arg1="y" arg2="${kdb.del}"/>
+	<then>
+	<antcall target="deletekdbs" inheritAll="true">
+	    <param name="ae.delete.location" value="${kdb.bkupdir}"/>
+ 	</antcall>
+	</then>
+	</if>
+
+	<!-- copy kdbs and other data files to target AE installation -->
+	<antcall target="copydata" inheritAll="true"/>
+
+</target>
+
+<target name="batch" description="Run user-specified tasks in batch mode">
+
+
+	<echo message="Source AE installation location is ${ae.source.location}"/>
+
+
+	<echo>${kdb.num} kdbs will be selected </echo>
+	
+
+	<if>
+    		<equals arg1="y" arg2="${kdb.high}"/>
+    	<then>
+		<property name="kdb.descending" value="true"/>
+	</then>
+
+	<else>
+		<property name="kdb.descending" value="false"/>
+	</else>
+	</if>
+
+
+	<if>
+    		<equals arg1="y" arg2="${kdb.invertselect}"/>
+    	<then>
+		<property name="kdb.rest" value="true"/>
+	</then>
+
+	<else>
+		<property name="kdb.rest" value="false"/>
+	</else>
+	</if>
+	
+
+
+       
+	<!-- Delete kdbs from target AE installation if option selected -->
+	<if>
+	<equals arg1="y" arg2="${kdb.del}"/>
+	<then>
+	<antcall target="deletekdbs" inheritAll="true">
+	    <param name="ae.delete.location" value="${kdb.bkupdir}"/>
+ 	</antcall>
+	</then>
+	</if>
+
+	<!-- copy kdbs and other data files to target AE installation -->
+	<antcall target="copydata" inheritAll="true"/>
+
+</target>
+
+
+<target name="deletekdbs" description="Delete kdbs from specified installation">
+
+<delete verbose="true">
+	<fileset dir="${ae.delete.location}" includes="**/gw*/*kdb"/>
+</delete>
+
+</target>
+
+
+<target name="copydata" description="Copy AE data from one installation to another">
+
+<!-- a special property that is passed to "copykdbs" target when kdb list is needed for kdbs with specific prefix, for example, dc*kdb or stat*kdb in collaboration -->
+<property name="kdbprefix" value="" />
+
+<!-- copy the kdbs. Exclude collaboration and notification which have two set of kdbs with different prefixes -->
+<foreach param="kdb.dir" target="copykdbs" trim="true" inheritall="true">
+<path>
+<dirset dir="${ae.source.location}${file.separator}${ae.serverdir}" includes="**/gw*" excludes="collaboration/*, notifications/*, archived-process/**,msg/**"/>
+</path>
+</foreach>
+
+<!-- copy the collaboration dc and stat kdbs -->
+<!-- copy dc*kdb -->
+
+<property name="dcprefix" value="dc"/>
+<propertycopy name="kdbprefix" from="dcprefix" override="yes"/>
+
+<foreach param="kdb.dir" target="copykdbs" trim="true" inheritall="true">
+<path>
+<dirset dir="${ae.source.location}${file.separator}${ae.serverdir}" includes="collaboration/gw*"/>
+</path>
+</foreach>
+
+<!-- copy stat*kdb -->
+<property name="statprefix" value="stat"/>
+<propertycopy name="kdbprefix" from="statprefix" override="yes"/>
+
+<foreach param="kdb.dir" target="copykdbs" trim="true" inheritall="true">
+<path>
+<dirset dir="${ae.source.location}${file.separator}${ae.serverdir}" includes="collaboration/gw*"/>
+</path>
+</foreach>
+
+<!-- copy notifications n*kdb and s*kdb -->
+
+<!-- copy n*kdb -->
+<property name="nprefix" value="n"/>
+<propertycopy name="kdbprefix" from="nprefix" override="yes"/>
+
+<foreach param="kdb.dir" target="copykdbs" trim="true" inheritall="true">
+<path>
+<dirset dir="${ae.source.location}${file.separator}${ae.serverdir}" includes="notifications/gw*"/>
+</path>
+</foreach>
+
+<!-- copy s*kdb -->
+<property name="sprefix" value="s"/>
+<propertycopy name="kdbprefix" from="sprefix" override="yes"/>
+
+<foreach param="kdb.dir" target="copykdbs" trim="true" inheritall="true">
+<path>
+<dirset dir="${ae.source.location}${file.separator}${ae.serverdir}" includes="notifications/gw*"/>
+</path>
+</foreach>
+
+<!-- If user has selected option to copy AE contents, copy them -->
+<!-- copy _admin, msg and archived-process folders  -->
+
+<!-- update property values of _admin, msg and archived-process folder locations based on the user input values of source and destination folder location -->
+
+<!-- Set the source and destination directories only if interactive mode is set. In batch mode, these should be set from command line -->
+<if>
+<equals arg1="n" arg2="${batchmode}"/>
+<then>
+
+  <property name="ae.source.admindir.input"     value="${ae.source.location}${file.separator}${ae.admindir}" />
+  <property name="ae.source.msgdir.input"     value="${ae.source.location}${file.separator}${ae.serverdir}${file.separator}${ae.msgdir}" />
+  <property name="ae.dest.admindir.input"     value="${kdb.bkupdir}${file.separator}${ae.admindir}" />
+  <property name="ae.dest.msgdir.input"     value="${kdb.bkupdir}${file.separator}${ae.serverdir}${file.separator}${ae.msgdir}" />
+  <property name="ae.source.archivedprocessdir.input"     value="${ae.source.location}${file.separator}${ae.serverdir}${file.separator}${ae.archivedprocessdir}" />
+  <property name="ae.dest.archivedprocessdir.input"     value="${kdb.bkupdir}${file.separator}${ae.serverdir}${file.separator}${ae.archivedprocessdir}" />
+<propertycopy name="ae.dest.admindir" from="ae.dest.admindir.input" override="yes"/>
+<propertycopy name="ae.dest.msgdir" from="ae.dest.msgdir.input" override="yes"/>
+<propertycopy name="ae.dest.archivedprocessdir" from="ae.dest.archivedprocessdir.input" override="yes"/>
+<propertycopy name="ae.source.admindir" from="ae.source.admindir.input" override="yes"/>
+<propertycopy name="ae.source.msgdir" from="ae.source.msgdir.input" override="yes"/>
+<propertycopy name="ae.source.archivedprocessdir" from="ae.source.archivedprocessdir.input" override="yes"/>
+
+</then>
+</if>
+
+
+<if>
+	<equals arg1="y" arg2="${ae.copycontents}"/>
+	<then>
+
+	<!-- copy _admin folder next -->
+		<copy todir="${ae.dest.admindir}" preservelastmodified="yes" overwrite="yes" verbose="yes">
+		<fileset dir="${ae.source.admindir}" includes="**/*" excludes="**/*.sh **/*.bat"/>
+		</copy>
+	<!-- copy /server/msg folder next  -->
+		<copy todir="${ae.dest.msgdir}" preservelastmodified="yes" overwrite="yes" verbose="yes">
+		<fileset dir="${ae.source.msgdir}" includes="**/*"/>
+		</copy>
+	<!-- copy /server/archived-process folder next -->
+		<copy todir="${ae.dest.archivedprocessdir}" preservelastmodified="yes" overwrite="yes" verbose="yes">
+		<fileset dir="${ae.source.archivedprocessdir}" includes="**/*"/>
+		</copy>
+
+	</then>
+</if>
+
+</target>
+
+<target name="copykdbs" description="copy kdbs to the specified directory">
+
+<echo message="KDB Directory ${kdb.dir}"/>
+<if>
+<!-- if no kdb prefix is set, get all kdbs -->
+<equals arg1="" arg2="${kdbprefix}"/>
+<then>
+<path id="kdblist">
+<fileset dir="${kdb.dir}" includes="*.kdb" excludes="writing*.kdb"/>
+</path>
+</then>
+<else>
+<path id="kdblist">
+<fileset dir="${kdb.dir}" includes="${kdbprefix}*.kdb" excludes="writing*.kdb"/>
+</path>
+</else>
+</if>
+<property name="kdb.list" refid="kdblist"/>
+
+<!-- get the kdb filenames for the sorted and filtered list -->
+<sortedfilelist name="sortedkdblist" filelist="${kdb.list}" descending="${kdb.descending}" rest="${kdb.rest}" numberOfFiles="${kdb.num}"/>
+
+
+<!-- get server subdirectory for the source directory and copy in the same subdirectory relative to destination - good practice to maintain paths when copying kdbs -->
+<aeserversubdir name="serversubdir" dirPath="${kdb.dir}"/>
+
+<!-- make sure that sortedfilelist is not empty otherwise fileset would end up including everything -->
+
+<if>
+<equals arg1="" arg2="${sortedkdblist}"/>
+<then>
+</then>
+<else>
+<!-- cast output of sortedfilelist as a fileset - it can then be used by other tasks (see copy task below) that use fileset -->
+<move todir="${kdb.bkupdir}${file.separator}${ae.serverdir}${file.separator}${serversubdir}" overwrite="yes" verbose="yes">
+<fileset dir="${kdb.dir}" includes="${sortedkdblist}"/>
+</move>
+</else>
+</if>
+
+</target>
+
+</project>

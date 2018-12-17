@@ -1,0 +1,678 @@
+import static groovy.io.FileType.FILES
+
+import java.util.regex.Matcher
+
+import com.appian.releng.processrunner.ProcessRunner
+import org.apache.commons.lang3.RandomStringUtils
+import org.apache.tools.ant.filters.ReplaceTokens
+import groovy.util.slurpersupport.GPathResult
+import groovy.xml.MarkupBuilder
+import groovy.xml.XmlUtil
+
+buildscript {
+  dependencies {
+    classpath files('lib/process-runner-1.0.2.jar', 'lib/commons-lang3-3.4.jar')
+  }
+}
+
+def expandParameters = { parameters ->
+  def list = []
+    if (parameters != null && parameters.trim().length() > 0) {
+      list = parameters.split(',')
+  }
+  return list
+}
+
+def checkAccessToDir = { directoryPath ->
+  def directory = new File(directoryPath)
+  if (!directory.exists()) {
+    try {
+      directory.mkdirs()
+    } catch (Exception e) {
+      System.err.println "ERROR the directory path provided is not valid: ${directoryPath}"
+      System.exit(1)
+    }
+  }
+
+  if (!directory.canWrite()) {
+    System.err.println "ERROR the script does not have write access to the directory: ${directoryPath}"
+    System.exit(1)
+  }
+}
+
+def getScriptUser = {
+  def cmd = []
+  if (ProcessRunner.isWindows) {
+    cmd << ['echo', '%USERNAME%']
+  } else {
+    cmd << ['whoami']
+  }
+  def streams = []
+  def p = new ProcessRunner()
+  p.run(captureStreams: streams, ignoreExitValue: true, silent:true, cmd)
+
+  streams[0].toString().trim()
+}
+
+def scriptUser = getScriptUser()
+
+def logToFile = { action, results ->
+  def tstamp = new Date().format('yyyy-MM-dd HH:mm:ss:SSS')
+  file("${configureScriptHomeDir}/configure.log") << "${tstamp},${scriptUser},${action},${results}\n"
+}
+
+def getRootExceptionMessage = { e ->
+  def t = e
+    while (t.getCause() != null) {
+      t = t.getCause()
+  }
+  t.getMessage()
+}
+
+/*
+* Backup all the files from the Appian installation into a backup directory.
+* Parameters:
+*   - appianDir
+*   - backupDir
+*/
+task backupAppian {
+  doLast {
+    checkAccessToDir(backupDir)
+    try {
+      copy {
+        from appianDir
+        into backupDir
+        include 'deployment/**', 'search-server/**', 'data-server/**', 'conf/**', 'tomcat/**'
+        exclude 'data-server/data/**'
+      }
+      logToFile('Backup', "Appian files backed up from ${appianDir} to ${backupDir}")
+    } catch (Exception e) {
+      System.err.println "ERROR backing up Appian: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+/*
+* Create a repository directory by copying the contents of the Templates directory into the repository directory.
+* Files that already exist in the repository directory are not overwritten.
+* Parameters:
+*   - templatesDir
+*   - repositoryDir
+*/
+task createRepository {
+  doLast {
+    checkAccessToDir(repositoryDir)
+    try{
+      copy {
+        from templatesDir
+        into repositoryDir
+        exclude {
+          def fileToCopy = new File(repositoryDir, it.getRelativePath().getPathString())
+          if (!fileToCopy.isDirectory() && fileToCopy.exists()) {
+            return true
+          } else {
+            return false
+          }
+        }
+      }
+      logToFile('Create repository', "New repository created in directory ${repositoryDir} from ${templatesDir}")
+    } catch (Exception e) {
+      System.err.println "ERROR creating a new repository: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+/*
+* Make a copy of all the example files (*.example) within the repository directory and
+* change the extension to .<environmentName>.
+* The task does not overwrite a .<environment> file that already exists.
+* Parameters:
+*   - environmentName
+*   - repositoryDir
+*/
+task registerEnvironment {
+  doLast {
+    checkAccessToDir(repositoryDir)
+    try {
+      copy {
+        from repositoryDir
+        into repositoryDir
+        include '**/*.example'
+        rename(/^(.+)(\.example)$/, '$1' + ".${environmentName}")
+        exclude {
+          if (!it.isDirectory()) {
+            def matcher = it.name =~ /^(.+)(\.example)$/
+            if (matcher != null && matcher.size() > 0) {
+              def newFileName = matcher[0][1] + ".${environmentName}"
+               if (new File(it.file.parentFile.canonicalPath, newFileName).exists()) {
+                return true
+              }
+            }
+          }
+          return false
+        }
+      }
+
+      def token = RandomStringUtils.randomAlphanumeric(256)
+      file("${repositoryDir}/conf").mkdirs()
+      file("${repositoryDir}/conf/appian.sec.${environmentName}") << token
+
+      logToFile('Register environment', "New environment ${environmentName} registered in repository ${repositoryDir}")
+    } catch (Exception e) {
+      System.err.println "ERROR registering a new environment: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+def excludeFilesByExtensionsInternal = { afile, otherEnvs ->
+  def result = false
+  if (!afile.isDirectory()) {
+    otherEnvs.any {
+      result = afile.name.endsWith(".${it}")
+    }
+  }
+  result
+}
+
+def excludeFilesByExtensions = { details, otherEnvs ->
+  excludeFilesByExtensionsInternal(details.file, otherEnvs)
+}
+
+def renameEnvironmentFile = { filename, env ->
+  def newfilename = filename
+  if (filename.endsWith(".${env}")) {
+    newfilename = filename.replace(".${env}", '')
+  }
+  newfilename
+}
+
+/*
+* Deploy configuration files to Appian.
+* Parameters:
+*   - environmentName
+*   - knownEnvironments
+*   - repositoryDir
+*   - destinationDir
+*   - appServerDir
+*   - resourceFile
+*/
+task deployAppianConfigurations (dependsOn: 'validateConfigurations') {
+  doLast {
+    checkAccessToDir(destinationDir)
+    try {
+      def otherEnvs = expandParameters(knownEnvironments).minus(environmentName)
+      def fileList = []
+      copy {
+        from repositoryDir
+        into destinationDir
+        exclude { toExclude ->
+          excludeFilesByExtensions(toExclude, otherEnvs)
+        }
+        exclude '**/*.example'
+        exclude 'bin'
+        exclude 'environments.properties'
+        rename { afile ->
+          def filename = renameEnvironmentFile(afile, environmentName)
+          fileList << filename
+          filename
+        }
+      }
+      // Copy the topology file from conf to search-server and data-server
+      def topologyFile = new File(repositoryDir, "conf/appian-topology.xml.${environmentName}")
+      if (!topologyFile.exists()) {
+        topologyFile = new File(repositoryDir, "conf/appian-topology.xml")
+      }
+      if (topologyFile.exists()) {
+        ['search-server', 'data-server'].each { service ->
+          copy {
+            from "${repositoryDir}/conf"
+            into "${destinationDir}/${service}/conf"
+            include "${topologyFile.getName()}"
+            rename { afile ->
+              def filename = renameEnvironmentFile(afile, environmentName)
+              fileList << filename
+              filename
+            }
+          }
+        }
+      }
+      def contextFileDir = "$appServerDir/conf/Catalina/localhost/"
+      mergeTomcatResourceIntoContext(contextFileDir, resourceFile)
+
+      logToFile('Deploy configurations', "Configurations deployed for environment ${environmentName} from directory ${repositoryDir} into directory ${destinationDir}. Files deployed: ${fileList.join(' ')}")
+    } catch (Exception e) {
+      System.err.println "ERROR deploying Appian configurations: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+/*
+* Parameters
+*  - repositoryDir
+*  - environmentName
+*/
+task validateConfigurations {
+  doLast {
+    try {
+      def logs = []
+      File envFile = new File(repositoryDir, "conf/custom.properties.${environmentName}")
+      File globalFile = new File(repositoryDir, 'conf/custom.properties')
+
+      if (!envFile.exists() && !globalFile.exists()) {
+        logs << "Validation Error: custom.properties is missing."
+      } else if (envFile.exists() && globalFile.exists()) {
+        logs << "Validation Error: custom.properties are duplicated."
+      } else {
+        File cpFile = envFile.exists() ? envFile : globalFile
+        def illegalPattern = /^[^#]{1}[^=]*=*$/
+        def serverPortPattern = /^conf\.suite\.SERVER_AND_PORT=.+$/
+        def appianDsPattern = /^conf\.data\.APPIAN_DATA_SOURCE=.+$/
+        def foundServerPort = false
+        def foundPrimaryDS = false
+        cpFile.eachLine {
+          if (it.trim() ==~ illegalPattern) {
+            logs << "Validation Error in file ${cpFile.name} at line ${it}"
+          } else if (it.trim() ==~ serverPortPattern) {
+            foundServerPort = true
+          } else if (it.trim() ==~ appianDsPattern ) {
+            foundPrimaryDS = true
+          }
+        }
+        if (!foundPrimaryDS) {
+          logs << "Validation Error in file ${cpFile.name}: missing property conf.data.APPIAN_DATA_SOURCE"
+        }
+        if (!foundServerPort) {
+          logs << "Validation Error in file ${cpFile.name}: missing property conf.suite.SERVER_AND_PORT"
+        }
+      }
+
+      if (logs.size > 0) {
+        logs.each {
+          println it
+        }
+        logToFile('Validate configurations', "Failed to validate configurations for environment ${environmentName} in repository ${repositoryDir}.\n\t${logs.join('\n\t')}")
+        System.exit(1)
+      }
+
+      logToFile('Validate configurations', "Configurations validated for environment ${environmentName} in repository ${repositoryDir}")
+    } catch (Exception e) {
+      System.err.println "ERROR validating configurations: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+def findJar(File dir, regex) {
+  def results = []
+  dir.eachFileMatch(FILES, regex) {
+    results << it
+  }
+  if (results.size() != 1) {
+    throw new RuntimeException("can't find exactly one jar matching $regex in $dir")
+  }
+  results[0].getCanonicalPath()
+}
+
+/*
+* Parameters:
+*  - password
+*  - appianDir
+*/
+task encodeDataSourcePassword {
+  doLast {
+    try {
+      def cpDelimiter = ':'
+      if (ProcessRunner.isWindows) {
+        cpDelimiter = ';'
+      }
+
+      def appianDirFile = new File(appianDir)
+      def jars = [findJar(new File(appianDirFile, '/_admin/_scripts/'), ~/classpath\.jar/)]
+      def cmd = ['java', '-cp', jars.join(cpDelimiter), 'com.appiancorp.tomcat.encoding.EncodingCryptographer', password]
+      def p = new ProcessRunner()
+      def exitCode = p.run silent:true, ignoreExitValue: false, cmd
+      if (exitCode == 0) {
+        logToFile('Encode security domain password', "Password encoded for datasource.")
+      } else {
+        logToFile('Encode security domain password', "Error while encoding the password for datasource.")
+      }
+    } catch (Exception e) {
+      System.err.println "ERROR encoding the datasource password: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+/*
+* Parameters:
+*  - nodeName
+*  - appServerDir
+*/
+task configureTomcatClustering {
+  doLast {
+    try{
+      def unixEnv = file(appServerDir + "/bin/setenv.sh")
+      if (unixEnv.exists()) {
+        def unixEnvString = "export CATALINA_OPTS=\"\$CATALINA_OPTS -DjvmRoute=$nodeName\""
+        if (!unixEnv.text.contains(unixEnvString)) {
+          unixEnv << unixEnvString + System.lineSeparator()
+        }
+      }
+      def winEnv = file(appServerDir + "/bin/setenv.bat")
+      if (winEnv.exists()) {
+        def winEnvString = "set CATALINA_OPTS=%CATALINA_OPTS% -DjvmRoute=$nodeName"
+        if (!winEnv.text.contains(winEnvString)) {
+          winEnv << winEnvString + System.lineSeparator()
+        }
+      }
+
+      if (!winEnv.exists() && !unixEnv.exists()) {
+        System.err.println "ERROR configuring tomcat for clustering, no setenv scripts are present in ${appServerDir}/bin"
+        System.exit(1)
+      }
+
+      logToFile('Configure Tomcat Clustering', "Successfully configured Tomcat clustering with a node name of: ${nodeName}")
+    } catch (Exception e) {
+      System.err.println "ERROR configuring tomcat for clustering: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+/*
+* Parameters:
+*  - resourceFile
+*  - appServerDir
+*/
+task configureTomcatResources {
+  doLast {
+    def contextFileDir = "$appServerDir/conf/Catalina/localhost/"
+    try{
+      mergeTomcatResourceIntoContext(contextFileDir, resourceFile)
+
+      logToFile('Configure Tomcat Resources', "Successfully configured Tomcat resources with resources found in: ${resourceFile}")
+    } catch (Exception e) {
+      System.err.println "ERROR configuring Tomcat resources from file: ${resourceFile}, error: ${getRootExceptionMessage(e)}"
+      System.exit(1)
+    }
+  }
+}
+
+private void mergeTomcatResourceIntoContext(String contextFileDir, String resourceFile) {
+  List<String> contextFilenames = new FileNameFinder().getFileNames(contextFileDir, '*.xml')
+  if (contextFilenames.size() > 1) {
+    System.err.println "ERROR configuring Tomcat resources, multiple context files found in : $contextFileDir"
+    System.exit(1)
+  }
+
+  if (contextFilenames.size() < 1) {
+    System.err.println "ERROR configuring Tomcat resources, no context files found in : $contextFileDir"
+    System.exit(1)
+  }
+  def contextFile = file(contextFilenames.get(0))
+  def tomcatResources = file(resourceFile)
+  contextFile.text = contextFile.text.replaceFirst("(?s)(<!-- BEGIN DATASOURCES -->).*(<!-- END DATASOURCES -->)",
+      "\$1\n" + Matcher.quoteReplacement(tomcatResources.text) + "\$2")
+  tomcatResources.delete()
+}
+
+/*
+* Parameters:
+*  - inputDir
+*  - outputFile
+*/
+task convertJbossDatasourcesToTomcat {
+  doLast {
+    try {
+      if (inputDir == null || outputFile == null) {
+        System.err.println "ERROR converting JBoss Tomcat resources, missing required paramaters. inputDir: ${inputDir}, outputFile: ${outputFile}"
+        System.exit(1)
+      }
+
+      File output = new File(outputFile)
+      output.delete()
+      output.createNewFile()
+
+      def jbossToTomcatPropertyMap = [
+          // top level attributes <datasource ___="" />
+          "pool-name"                 : { value, props -> return }, // do nothing, no equivalent, tomcat will give eah its own pool, with no parameter to name it
+          "jndi-name"                 : { value, props -> props["name"] = value.replaceFirst("^java:/?", "") },
+          "use-java-context"          : { value, props -> return }, // do nothing, no equivalent, we are controlling where we lookup in our InitialContext
+          "enabled"                   : { value, props -> return }, // do nothing, no equivalent. we are skipping the whole datasource if it was false
+
+          "jta"                       : { value, props -> return }, // do nothing, no equivalent
+          "use-ccm"                   : { value, props -> return }, // do nothing, no equivalent
+          "spy"                       : { value, props -> return }, // do nothing, no equivalent, disabled in all found instances, provides more logging for jboss
+          "sendStringParametersAsUnicode" : { value, props -> props['connectionProperties'] = "${props['connectionProperties'] ?: ""}sendStringParametersAsUnicode=$value;" },
+
+          // top level nodes < ___ >
+          "connection-url"            : { value, props -> props["url"] = value },
+          "driver"                    : { value, props -> return }, // do nothing, not needed used to find path for module in jboss
+          "driver-class"              : { value, props -> props["driverClassName"] = value },
+          "xa-datasource-class"       : { value, props -> props["driverClassName"] = value }, // com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+          "datasource-class"          : { value, props ->
+            if (value != "") {
+              // in all examples we have it was empty, replaced by type, which we always provide
+              throw new RuntimeException("expected datasource-class to be empty, but was $value")
+            }
+          },
+          "user-name"                 : { value, props -> props["username"] = value },
+          "password"                  : { value, props -> props["password"] = value },
+          "transaction-isolation"     : { value, props ->
+            if (value == 'TRANSACTION_READ_COMMITTED') {
+              props["defaultTransactionIsolation"] = 'READ_COMMITTED'
+            } else if (value == "TRANSACTION_NONE") {
+              props["defaultTransactionIsolation"] = 'NONE'
+            } else {
+              throw new RuntimeException("COULD NOT FIND ${value}")
+            }
+          },
+
+          // <xa-datasource-properties name: >__ </xa-datasource-properties>
+          "URL"                       : { value, props -> props["url"] = value },
+          "databaseName"              : { value, props -> return }, // do nothing
+          "portNumber"                : { value, props -> return }, // do nothing
+          "serverName"                : { value, props -> return }, // do nothing
+          "User"                      : { value, props -> props["username"] = value },
+          "Password"                  : { value, props -> props["password"] = value },
+          "characterEncoding"         : { value, props -> props['connectionProperties'] = "${props['connectionProperties'] ?: ""}characterEncoding=$value;" },
+          "useUnicode"                : { value, props -> props['connectionProperties'] = "${props['connectionProperties'] ?: ""}useUnicode=$value;" },
+          "ConnectionProperties"      : { value, props -> props['connectionProperties'] = "${props['connectionProperties'] ?: ""}$value;" },
+
+          // <xa-pool>
+          "min-pool-size"             : { value, props ->
+            props["initialSize"] = value
+            props["minIdle"] = value
+          },
+          "max-pool-size"             : { value, props -> props["maxActive"] = value },
+          "pad-xid"                   : { value, props ->
+            if (value != 'false') {
+              // This was a work around for Oracle and JBoss at one point, but looks like the only values are false, and that is the default, shouldn't be needed
+              throw new RuntimeException("Unexpected value for pad-xid: ${value}")
+            }
+          },
+          "wrap-xa-resource"          : { value, props -> return },// do nothing, JBoss specific setting to increase logging at the transaction manager level https://access.redhat.com/solutions/665583
+
+          // <pool>
+          "prefill"                   : { value, props -> return }, // do nothing, no equivalent. defaults to false in jboss, and unless min pool is specified should be equivalent
+          "use-strict-min"            : { value, props -> return }, // Define if the min-pool-size should be considered a strictly. no equivalent
+          "flush-strategy"            : { value, props ->
+            if (value != 'FailingConnectionOnly') { // I think this is the norm for tomcat dbcp?
+              throw new RuntimeException("Unexpected value for flush-strategy: ${value}")
+            }
+          },
+
+          // <timeout>
+          "blocking-timeout-millis"   : { value, props -> props["maxWait"] = value },
+          "idle-timeout-minutes"      : { value, props -> props["minEvictableIdleTimeMillis"] = Long.valueOf(value) * 60 * 1000 }, // needs conversion
+          "xa-resource-timeout"       : { value, props ->
+            if (value != '0') {
+              // Default is zero which does not invoke the setter in JBoss, not sure there is a setter for this in tomcat
+              throw new RuntimeException("Unexpected value for xa-resource-timeout: ${value}")
+            }
+          },
+
+          // <validation>
+          "validate-on-match"         : { value, props -> props["testOnBorrow"] = value },
+          "valid-connection-checker"  : { value, props -> return }, // JBoss specific examples use jboss classes, a way to configure validation
+          "exception-sorter"          : { value, props -> return }, // JBoss specific examples use jboss classes, a way to configure validation
+          "check-valid-connection-sql": { value, props -> props["validationQuery"] = value },
+          "background-validation"     : { value, props -> props["testWhileIdle"] = value },
+          "use-fast-fail"             : { value, props -> props["fastFailValidation"] = value },
+
+          // <statement>
+          "track-statements"          : { value, props ->
+            if (value != 'false') {
+              // Tomcat has something similar, but all examples are false so not worrying about it, if needed see jdbcInterceptors="StatementFinalizer"
+              throw new RuntimeException("Unexpected value for track-statements: ${value}")
+            }
+          },
+      ].withDefault { val -> { value, props -> throw new RuntimeException("Unexpected Attribute: ${val} with Value:$value") } }
+
+      def processDs = { datasource ->
+        if (datasource.@enabled == "false") {
+          println "datasource is not enabled, skipping"
+          return
+        }
+        Properties dsProps = new Properties()
+        if (datasource.name() == "datasource") {
+          dsProps["type"] = "javax.sql.XADataSource"
+        } else if (datasource.name() == "xa-datasource") {
+          dsProps["type"] = "javax.sql.XADataSource"
+        } else {
+          throw new RuntimeException("unexpected datasource type found: ${datasource.name()} expected datasource or xa-datasource")
+        }
+        dsProps["factory"] = "org.apache.tomcat.jdbc.pool.DataSourceFactory"
+        dsProps["accessToUnderlyingConnectionAllowed"] = "true"
+        dsProps["minEvictableIdleTimeMillis"] = "90000"
+        dsProps["timeBetweenEvictionRunsMillis"] = "450000"
+        dsProps["numTestsPerEvictionRun"] = "200"
+        datasource.attributes().each { attribute ->
+          jbossToTomcatPropertyMap[attribute.getKey()](attribute.getValue(), dsProps)
+        }
+
+        // Handle properties with the same node name
+        datasource."xa-datasource-property".each { property ->
+          jbossToTomcatPropertyMap["${property.@name}"](property.text(), dsProps)
+        }
+        def connectionProps = datasource."connection-property"
+        if (connectionProps.size() > 0) {
+          dsProps["connectionProperties"] = connectionProps.collect { prop -> "${prop.@name}=${prop.text()}" }.join(";")
+        }
+
+        // Closure to process a property single node
+        def addToProperties
+        addToProperties = { child ->
+          if (child.name() == "connection-property" || child.name() == "xa-datasource-property") {
+            return // properties handled separately
+          }
+          if (child.children().size() > 0) {
+            child.children().each addToProperties
+            return
+          }
+          jbossToTomcatPropertyMap[child.name()](child.text(), dsProps)
+        }
+
+        datasource.children().each addToProperties
+
+        if (!dsProps.hasProperty("driverClassName") || dsProps["driverClassName"] == "") {
+          if (datasource.driver.toString().toLowerCase().contains("oracle")) {
+            dsProps["driverClassName"] = "oracle.jdbc.driver.OracleDriver"
+          } else if (datasource.driver.toString().toLowerCase().contains("sqlserver")) {
+            dsProps["driverClassName"] = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+          } else if (datasource.driver.toString().toLowerCase().contains("db2")) {
+            dsProps["driverClassName"] = "com.ibm.db2.jcc.DB2Driver"
+          } else if (datasource.driver.toString().toLowerCase().contains("mysql")) {
+            dsProps["driverClassName"] = "com.mysql.jdbc.Driver"
+          } else {
+            throw new RuntimeException("Unexpected driver type: ${datasource.driver}")
+          }
+        }
+
+        if (dsProps["testOnBorrow"] == "true" && dsProps["validationQuery"] == null) {
+          if (datasource.validation."valid-connection-checker"."@class-name" == "org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker") {
+            dsProps["validationQuery"] = "/* ping */"
+          } else {
+            throw new RuntimeException(" missing validationQuery")
+          }
+        }
+
+        if (datasource.driver.toString().toLowerCase().contains('mysql')) {
+          def connectionProperties = dsProps['connectionProperties'] as String
+          if (connectionProperties != null && connectionProperties.contains('characterEncoding=UTF-8;') &&
+              !connectionProperties.contains('connectionCollation=')) {
+            dsProps['connectionProperties'] = "${connectionProperties}connectionCollation=utf8mb4_unicode_ci;"
+          }
+        }
+
+        if (dsProps["url"] == null) {
+          throw new RuntimeException(" missing url")
+        }
+
+        StringWriter writer = new StringWriter()
+        MarkupBuilder resourceXml = new MarkupBuilder(writer)
+        resourceXml.Resource(dsProps)
+
+        output.append(writer.toString())
+      }
+
+      new File(inputDir).listFiles().each { file ->
+        if (file.name.endsWith("ds.xml")) {
+          GPathResult list = new XmlSlurper().parse(file)
+          list.datasource.each processDs
+          list."xa-datasource".each processDs
+        } else {
+          println "Skipping non ds.xml file: ${file.name}"
+        }
+      }
+    } catch (Exception e) {
+      System.err.println "ERROR converting JBoss datasources to Tomcat resources: ${getRootExceptionMessage(e)}"
+      e.printStackTrace()
+      System.exit(1)
+    }
+  }
+}
+
+/*
+* Extract a key/value string into a map. The string must match the patter: key1:value1,key2:value2,...
+*/
+def extractKeyValueParams = { param ->
+  def keyvalues = [:]
+  if (param != null && param.trim().length() > 0) {
+    param.split(',').each { pair ->
+      def keyvalue = pair.split(':')
+      // fix this because it does not work for windows paths
+      keyvalues."${keyvalue[0]}" = keyvalue[1]
+    }
+  }
+}
+
+//*****************************************
+// Tasks used for testing purposes only
+//*****************************************
+
+/*
+* Dummy task for integration testing of handoff between menu and gradle.
+* Return the parameters with the text polo!
+*/
+task forIntegrationTestingOnly {
+  doLast {
+    println "${testText} polo!"
+  }
+}
+
+task testExcludeFilesByExtensions {
+  doLast {
+    copy {
+      from testSource
+      into testDestination
+      exclude { toExclude ->
+        excludeFilesByExtensions(toExclude, expandParameters(testExtensions))
+      }
+    }
+  }
+}

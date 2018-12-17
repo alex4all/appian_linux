@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appian-report-file>
+  <baseFilters>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+      <apply>false</apply>
+      <standardDeviationCount>0.0</standardDeviationCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+      <apply>false</apply>
+      <dayCount>0.0</dayCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+      <apply>false</apply>
+      <completedCount>0</completedCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+      <apply>false</apply>
+    </baseFilter>
+  </baseFilters>
+  <batchSize>25</batchSize>
+  <columns>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=tp!name</expression>
+      <formatToken>number</formatToken>
+      <group>true</group>
+      <lastFormatToken>number</lastFormatToken>
+      <localId>2</localId>
+      <name>##!node_stats_per_process.column.node_name</name>
+      <show>true</show>
+    </column>
+    <column>
+      <columnAggregationFunction>23</columnAggregationFunction>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=Lag()</expression>
+      <formatToken>durations</formatToken>
+      <group>false</group>
+      <lastAggregateToken>durations</lastAggregateToken>
+      <localId>0</localId>
+      <name>##!node_stats_per_process.column.lag</name>
+      <show>true</show>
+    </column>
+    <column>
+      <columnAggregationFunction>23</columnAggregationFunction>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=Completion()</expression>
+      <formatToken>durations</formatToken>
+      <group>false</group>
+      <lastAggregateToken>durations</lastAggregateToken>
+      <localId>1</localId>
+      <name>##!node_stats_per_process.column.completion</name>
+      <show>true</show>
+    </column>
+  </columns>
+  <contextType>4</contextType>
+  <quickFilters />
+  <recursive>false</recursive>
+  <sortColumnLocalId>2</sortColumnLocalId>
+  <sortOrder>1</sortOrder>
+  <startIndex>0</startIndex>
+  <type>2</type>
+  <displayThresholds>false</displayThresholds>
+  <displayType>0</displayType>
+  <name>##!node_stats_per_process</name>
+  <quickFilterDisplay>1</quickFilterDisplay>
+  <showLegend>true</showLegend>
+  <showQuickFiltersInToolbar>true</showQuickFiltersInToolbar>
+  <supportedTypes>
+    <supportedType>0</supportedType>
+    <supportedType>1</supportedType>
+    <supportedType>2</supportedType>
+    <supportedType>3</supportedType>
+  </supportedTypes>
+  <thresholdColumnLocalId>6</thresholdColumnLocalId>
+  <thresholdColumnName>Performance</thresholdColumnName>
+  <thresholds>
+    <threshold>
+      <defaultIconName>indicatorgreen</defaultIconName>
+      <icon>9</icon>
+      <label>Quickly Addressed</label>
+      <upperBound>20.0</upperBound>
+    </threshold>
+    <threshold>
+      <defaultIconName>indicatoryellow</defaultIconName>
+      <icon>11</icon>
+      <label>Addressed In Time</label>
+      <upperBound>50.0</upperBound>
+    </threshold>
+    <threshold>
+      <defaultIconName>indicatorred</defaultIconName>
+      <icon>10</icon>
+      <label>Addressed Late</label>
+    </threshold>
+  </thresholds>
+  <useCustomToolbar>false</useCustomToolbar>
+  <useDefaultBarGraphXML>true</useDefaultBarGraphXML>
+  <useDefaultLineGraphXML>true</useDefaultLineGraphXML>
+  <useDefaultPieGraphXML>true</useDefaultPieGraphXML>
+</appian-report-file>
+

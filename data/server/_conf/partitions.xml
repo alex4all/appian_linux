@@ -1,0 +1,7 @@
+<partitions>
+ <collaboration>      
+   <partition id="1">accdocs1</partition>
+   <partition id="2">accdocs2</partition>
+   <partition id="3">accdocs3</partition>
+ </collaboration>
+</partitions>

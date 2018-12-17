@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gateway-config>
+  <engine auto-database-save="1" name="forums"/>
+  <engine auto-database-save="1" name="notify"/>
+  <engine auto-database-save="1" name="notify-email"/>
+  <engine auto-database-save="1" name="channels"/>
+  <engine auto-database-save="1" name="content"/>
+  <engine auto-database-save="1" name="collaboration-statistics"/>
+  <engine auto-database-save="1" name="personalization"/>
+  <engine auto-database-save="1" name="portal"/>
+  <engine auto-database-save="1" name="process-design"/>
+  <engine auto-database-save="1" name="process-analytics"/>
+  <engine auto-database-save="1" name="process-analytics0"/>
+  <engine auto-database-save="1" name="process-analytics1"/>
+  <engine auto-database-save="1" name="process-analytics2"/>
+  <engine auto-database-save="1" name="process-analytics3"/>
+  <engine auto-database-save="1" name="process-analytics4"/>
+  <engine auto-database-save="1" name="process-analytics5"/>
+  <engine auto-database-save="1" name="process-analytics6"/>
+  <engine auto-database-save="1" name="process-analytics7"/>
+  <engine auto-database-save="1" name="process-analytics8"/>
+  <engine auto-database-save="1" name="process-analytics9"/>
+  <engine auto-database-save="1" name="process-analytics10"/>
+  <engine auto-database-save="1" name="process-analytics11"/>
+  <engine auto-database-save="1" name="process-analytics12"/>
+  <engine auto-database-save="1" name="process-analytics13"/>
+  <engine auto-database-save="1" name="process-analytics14"/>
+  <engine auto-database-save="1" name="process-analytics15"/>
+  <engine auto-database-save="1" name="process-execution0"/>
+  <engine auto-database-save="1" name="process-execution1"/>
+  <engine auto-database-save="1" name="process-execution2"/>
+  <engine auto-database-save="1" name="process-execution3"/>
+  <engine auto-database-save="1" name="process-execution4"/>
+  <engine auto-database-save="1" name="process-execution5"/>
+  <engine auto-database-save="1" name="process-execution6"/>
+  <engine auto-database-save="1" name="process-execution7"/>
+  <engine auto-database-save="1" name="process-execution8"/>
+  <engine auto-database-save="1" name="process-execution9"/>
+  <engine auto-database-save="1" name="process-execution10"/>
+  <engine auto-database-save="1" name="process-execution11"/>
+  <engine auto-database-save="1" name="process-execution12"/>
+  <engine auto-database-save="1" name="process-execution13"/>
+  <engine auto-database-save="1" name="process-execution14"/>
+  <engine auto-database-save="1" name="process-execution15"/>
+
+  <windows>
+    <start-gateway-cmd>cmd /C start /MIN "GW: $(APP): $(GW_ID)" %APPIAN_EXEC% gw $(K2K_ID) $(GW_ID)</start-gateway-cmd>
+    <server-cmd>cmd /C start /MIN /D"$(SVR_DIR)" "APP: $(AE_APP): $(TITLE) [Appian]" %APPIAN_EXEC% %AE_SVRLIB%\adb $(BOOT) -l -p $(SVR_PORT) $(GW_PORT) $(GW_ID) hs $(GW_HS)</server-cmd>
+    <checkpoint-cmd>cmd /C start /MIN /D"$(SVR_DIR)" "CHK: $(AE_APP): $(TITLE) [Appian]" %APPIAN_EXEC% %AE_SVRLIB%\adb $(BOOT) -l checkpoint $(K2K_ID)</checkpoint-cmd>
+    <copy-process-cmd>cmd /C start /MIN /D"$(SVR_DIR)" "COPY: $(AE_APP): $(TITLE) [Appian]" %APPIAN_EXEC% %AE_SVRLIB%\copy_kdb $(K2K_ID)</copy-process-cmd>
+    <db-copy-cmd>$(AE_SVRSCRIPTS)\gateway\copy.bat $(DB) $(GW_ID) "$(SVR_DIR)" $(TO_ID) "$(TO_SVR_DIR)"</db-copy-cmd>
+  </windows>
+  <unix>
+    <start-gateway-cmd>$APPIAN_EXEC gw $(K2K_ID) $(GW_ID)</start-gateway-cmd>
+    <server-cmd>$(AE_SVRSCRIPTS)/gateway/exec_bg_redirect.sh $(SVR_DIR) '$(BOOT) -l -p $(SVR_PORT) $(GW_PORT) $(GW_ID) hs $(GW_HS)' gw-$(NAME)</server-cmd>
+    <checkpoint-cmd>$(AE_SVRSCRIPTS)/gateway/exec_bg_redirect.sh $(SVR_DIR) '$(BOOT) -l checkpoint $(K2K_ID)'</checkpoint-cmd>
+    <copy-process-cmd>$(AE_SVRSCRIPTS)/gateway/exec_bg_redirect_copy_kdb.sh $(SVR_DIR) $(K2K_ID)</copy-process-cmd>
+    <db-copy-cmd>$(AE_SVRSCRIPTS)/gateway/copy.sh $(DB) $(GW_ID) "$(SVR_DIR)" $(TO_ID) "$(TO_SVR_DIR)"</db-copy-cmd>
+  </unix>
+</gateway-config>

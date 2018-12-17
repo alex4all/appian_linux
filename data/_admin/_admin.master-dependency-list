@@ -1,0 +1,48 @@
+
+------------------------------------------------------------
+Project :_admin
+------------------------------------------------------------
+
+api
+No dependencies
+
+apt
+No dependencies
+
+archives - Configuration for archive artifacts.
+No dependencies
+
+compile
+No dependencies
+
+compileOnly
+No dependencies
+
+default - Configuration for default artifacts.
+No dependencies
+
+implementation
+No dependencies
+
+runtime
+No dependencies
+
+runtimeOnly
+No dependencies
+
+testCompile
+No dependencies
+
+testCompileOnly
+No dependencies
+
+testImplementation
+No dependencies
+
+testRuntime
+No dependencies
+
+testRuntimeOnly
+No dependencies
+
+A web-based, searchable dependency report is available by adding the --scan option.

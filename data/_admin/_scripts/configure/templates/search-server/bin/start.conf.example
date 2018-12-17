@@ -1,0 +1,16 @@
+# Copy this file to start.conf and delete the "#" comment markers of the variables to enable.
+#
+# This file may be edited to override settings from start.sh.
+
+# Default search server memory settings.  The value here will override the default value set in start.sh.
+# Heap size should be no larger than 1/2 system memory. Do not set heap size larger than 30 GB.
+# Xms and Xmx values should be the same to prevent costly heap resizing.
+# SS_MEM_ARGS="-Xms1024m -Xmx1024m"
+
+# SS_GC_ARGS="-XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly"
+# SS_OTHER_ARGS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Duser.timezone=GMT"
+
+# Any custom java options can be added here.
+# These will be added to the other SS_JAVA_OPTS passed to the command that starts the search server.
+# Do not add any properties that are already defined above or in start.sh.
+# SS_CUSTOM_OPTS=

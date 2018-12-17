@@ -1,0 +1,295 @@
+<project name="project" default="default" basedir=".">
+
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<taskdef name="purge" classname="com.appian.ant.datamaintenance.Purge"/>
+<taskdef name="pmove" classname="com.appian.ant.datamaintenance.Purge"/>
+<taskdef name="try" classname="ise.antelope.tasks.TryTask"/>
+<taskdef name="ifAntelope"    classname="ise.antelope.tasks.IfTask"/>
+<taskdef name="stringutil" classname="ise.antelope.tasks.StringUtilTask"/>
+<taskdef name="var" classname="ise.antelope.tasks.Variable"/>
+<taskdef name="ifAntelope"    classname="ise.antelope.tasks.IfTask"/>
+
+
+
+<property name="dir"  value="" />
+<property name="perf"  value="perflogs" />
+<property name="search"  value="search-server" />
+<property name="metrics" value="data-metrics" />
+<property name="pxid"  value="00" />
+<property name="pxmove"  value="n" />
+<property name="log.del"  value="n" />
+<property name="log.bkupdir" value=""/>
+<property name="log.numkeep"  value="5"/>
+
+<property name="execsuffix" value="PX"/>
+<property name="execfolder" value="exec"/>
+<property name="execid" value="00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15"/>
+<property name="anesuffix" value="PA"/>
+<property name="anefolder" value="analytics"/>
+<property name="aneid" value="0000,0001,0002,0003,0004,0005,0006,0007,0008,0009,0010,0011,0012,0013,0014,0015"/>
+<property name="perffiles" value="perf_monitor_rdbms,data_store_details,data_store_summary,engine_summary,expression_performance,expressions_details,expressions_summary,expressions_trace,ldap_details,ldap_summary,ldap_trace,offline_summary,offline_trace,plog_performance,reporting_details,reporting_summary,reporting_trace,rest_details,rest_summary,rest_trace,sail_details,sail_summary,sail_trace,search_server_replication_summary,smart_services_details,smart_services_summary,smart_services_trace,web_api_details,web_api_trace,web_api_summary,plog_performance"/>
+<property name="searchfiles" value="search-server-replication,search-server,search-server_index_indexing_slowlog,search-server_index_search_slowlog,impact-analysis-diff,search-server-client,search-server-repo-timing"/>
+<property name="metricsfiles" value="disk_usage,search_server_cluster,search_server"/>
+<property name="searchquery" value="search-query"/>
+<property name="csvsuffix" value="csv"/>
+<property name="logsuffix" value="log"/>
+<try>
+    <var name="op1" value="12"/>
+    <var name="op" value="+"/>
+    <math result="result" operand1="${op1}" operation="${op}" operand2="${log.numkeep}" datatype="int"/>
+<catch>
+  <echo message="Parameter is not an integer, please see --help."/>
+</catch>
+</try>
+
+<if>
+  <equals arg1="y" arg2="${log.del}"/>
+    <then>
+    </then>
+  <else>
+    <available file="${log.bkupdir}" property="isFileAvail"/>
+    <fail unless="isFileAvail" message="Target doesn't exist!"/>
+  </else>
+</if>
+
+<ifAntelope>
+	<bool>
+		<islessthan arg1="${log.numkeep}" arg2="1"/>
+	</bool>
+		<fail message="Must keep at least 1 log file!"/>
+	<else>
+	</else>
+</ifAntelope>
+
+<target name="default" description="Determine if script should move exec log files or all other.">
+<!-- We will parse the gw folders for each application and get the corresponding GW IDs in order to execute the -->
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="CH"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../channels" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="CO"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../collaboration" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="CS"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../collaboration" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="DF"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../forums" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="NE"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../notifications" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="NO"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../notifications" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="PO"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../portal" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="PE"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../personalization" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="PA"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../process/analytics" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<var name="appname" value="PD"/>
+<foreach param="gw.dir" target="main" trim="true" inheritall="true">
+<path>
+<dirset dir="../../process/design" includes="**/gw**"/>
+</path>
+</foreach>
+
+<!-- One foreach statement is needed per type of application-->
+<foreach list="${execid}" param="mesid" target="execclean" trim="true" inheritall="true"/>
+<foreach list="${aneid}" param="aneid" target="aneclean" trim="true" inheritall="true"/>
+<foreach list="${perffiles}" param="file" target="doclean" trim="true" inheritall="true">
+   <param name="location" value="${dir}\${perf}"/>
+   <param name="suffix" value="${csvsuffix}" />
+</foreach>
+<foreach list="${searchfiles}" param="file" target="doclean" trim="true" inheritall="true">
+  <param name="location" value="${dir}\${search}"/>
+  <param name="suffix" value="${logsuffix}" />
+</foreach>
+<foreach list="${metricsfiles}" param="file" target="doclean" trim="true" inheritall="true">
+  <param name="location" value="${dir}\${metrics}"/>
+  <param name="suffix" value="${csvsuffix}" />
+</foreach>
+<foreach list="${searchquery}" param="file" target="doclean" trim="true" inheritall="true">
+  <param name="location" value="${dir}"/>
+  <param name="suffix" value="${csvsuffix}" />
+</foreach>
+
+
+<!-- JAVA logs Cleanup  -->
+<if>
+<equals arg1="y" arg2="${log.del}"/>
+<then>
+  <echo message="Deleting log files for APP Server (JAVA): "/>
+  <purge test="false" keep="${log.numkeep}" move="false" logdir="${dir}">
+	<fileset dir="${dir}" includes="application-server*"/>
+  </purge>
+  <!-- Komodo Log Archive Cleanup -->
+  <echo message="Cleaning Service Manager Transaction Log Archives"/>
+  <property environment="env"/>
+  <if>
+    <os family="windows"/>
+    <then>
+      <exec executable="cmd" dir="${env.AE_HOME}/services/bin">
+        <arg line="/c cleanupArchives.bat logs -k ${log.numkeep}"/>
+      </exec>
+    </then>
+    <else>
+      <exec executable="/bin/bash" dir="${env.AE_HOME}/services/bin">
+        <arg line="cleanupArchives.sh logs -k ${log.numkeep}"/>
+      </exec>
+    </else>
+  </if>
+</then>
+<else>
+  <echo message="Moving log files for APP Server (JAVA): "/>
+  <pmove test="false" keep="${log.numkeep}" move="true" path="${log.bkupdir}/">
+    <fileset dir="${dir}" includes="application-server*"/>
+  </pmove>
+</else>
+</if>
+</target>
+
+<target name="execclean">
+  <antcall target="mesclean">
+    <param name="mescleanid" value="${mesid}"/>
+    <param name="mesfolder" value="${execfolder}"/>
+    <param name="messuffix" value="${execsuffix}"/>
+  </antcall>
+</target>
+
+<target name="aneclean">
+  <antcall target="mesclean">
+    <param name="mescleanid" value="${aneid}"/>
+    <param name="mesfolder" value="${anefolder}"/>
+    <param name="messuffix" value="${anesuffix}"/>
+  </antcall>
+</target>
+
+<target name="doclean">
+  <if>
+    <equals arg1="y" arg2="${log.del}"/>
+    <then>
+      <echo message="Deleting log file ${file}.${suffix} "/>
+      <purge test="false" keep="${log.numkeep}" move="false" logdir="${dir}">
+        <fileset dir="${location}" includes="${file}.${suffix}*"/>
+      </purge>
+    </then>
+    <else>
+      <echo message="Moving log file ${file}.${suffix}  "/>
+      <pmove test="false" keep="${log.numkeep}" move="true" path="${log.bkupdir}/">
+        <fileset dir="${location}" includes="${file}.${suffix}*"/>
+      </pmove>
+    </else>
+  </if>
+</target>
+
+<!-- ENGINES TARGET-->
+<target name="mesclean">
+  <echo> ENGINE $(messuffix)${mescleanid}</echo>
+  <available file="../../process/${mesfolder}/${mescleanid}" property="isMesAvail"/>
+  <if>
+    <equals arg1="true" arg2="${isMesAvail}"/>
+    <then>
+      <!-- One foreach statement is needed per type of application-->
+      <var name="appname" value="${messuffix}${mescleanid}"/>
+      <foreach param="gw.dir" target="main" trim="true" inheritall="true">
+        <path>
+          <dirset dir="../../process/${mesfolder}/${mescleanid}" includes="**/gw**"/>
+        </path>
+      </foreach>
+    </then>
+    <else>
+    </else>
+  </if>
+</target>
+
+
+<target name="main">
+
+<!-- -->
+
+<stringutil string="${gw.dir}" property="list1">
+            <replace regex="(\w|\\|\/)+(\/)server" replacement=""/>
+</stringutil>
+
+
+
+ <propertyregex property="id"
+			 input="${list1}"
+			 override="true"
+                         regexp="(\\|\/)(\w)+(\\|\/)(gw)(\d+)"
+                         select="\5"
+                         casesensitive="false" />
+
+<if>
+<equals arg1="y" arg2="${log.del}"/>
+<then>
+  <echo message="Deleting log files for ${appname}${id}: "/>
+  <purge test="false" keep="${log.numkeep}" move="false" logdir="${dir}">
+    <fileset dir="${dir}" includes="gw_${appname}${id}*"/>
+    <fileset dir="${dir}" includes="db_${appname}${id}*"/>
+    <fileset dir="${dir}\${perf}" includes="perf_monitor_db_${appname}${id}*"/>
+  </purge>
+</then>
+<else>
+  <echo message="Moving log files for ${appname}${id}: "/>
+  <pmove test="false" keep="${log.numkeep}" move="true" path="${log.bkupdir}/">
+	  <fileset dir="${dir}" includes="gw_${appname}${id}*"/>
+    <fileset dir="${dir}" includes="db_${appname}${id}*"/>
+    <fileset dir="${dir}\${perf}" includes="perf_monitor_db_${appname}${id}*"/>
+  </pmove>
+</else>
+</if>
+</target>
+
+
+</project>

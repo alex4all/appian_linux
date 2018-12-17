@@ -1,0 +1,117 @@
+<project name="project" default="default" basedir=".">
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+    <taskdef name="purge" classname="com.appian.ant.datamaintenance.DateFileSet"/>
+    <taskdef name="pmove" classname="com.appian.ant.datamaintenance.DateFileSet"/>
+    <typedef name="compare" classname="com.appian.ant.datamaintenance.DateGreaterThan"/>
+    <taskdef name="stringutil" classname="ise.antelope.tasks.StringUtilTask"/>
+    <taskdef name="try" classname="ise.antelope.tasks.TryTask"/>
+    <taskdef name="ifAntelope"    classname="ise.antelope.tasks.IfTask"/>
+
+
+<!-- Define Properties -->
+
+
+    <property name="svr.root" value=""/>
+    <property name="ap.xmldir" value=""/>
+    <property name="svr.root" value=""/>
+    <property name="ap.del"  value="n" />
+    <property name="ap.daystokeep"  value="100"/>
+    <property name="ap.bkupdir" value="../"/>
+   
+<if>
+<equals arg1="y" arg2="${ap.del}"/>
+<then>
+
+</then>
+<else>
+
+    <available file="${ap.bkupdir}" property="isFileAvail"/>
+    <fail unless="isFileAvail" message="Target doesn't exist!"/>
+</else>
+</if>
+
+    <target name="default" description="Read xml file and move/delete archived process files.">
+<try>
+    <var name="op1" value="12"/>
+    <var name="op" value="+"/>
+
+    <!-- demo plus -->
+    <math result="result" operand1="${op1}" operation="${op}" operand2="${ap.daystokeep}" datatype="int"/>
+<catch>
+<echo message="Parameter is not an integer, please see --help."/>
+</catch>
+</try>
+
+<ifAntelope>
+	<bool>
+		<islessthan arg1="${ap.daystokeep}" arg2="1"/>
+	</bool>
+		<fail message="Must keep at least files newer than 1 day!"/>
+	<else>
+	</else>
+</ifAntelope>
+
+
+    <echo message="Archived Process Files Cleanup "/>
+    <!-- Read Properties from XML file -->
+        <xmlproperty file="${ap.xmldir}${file.separator}archived-process-config.xml" keepRoot="false"/>
+        <tstamp>
+            <format property="start.timestamp" pattern="yyyyMMddHHmm" />
+        </tstamp>
+        <foreach list="${process.archiving.store.partition}" target="archproc" trim="true"  param="dirlist" inheritall="true">
+        </foreach>
+    </target>
+
+    <target name="archproc">
+        
+    <!--  First replace quack for forward slash -->
+        <stringutil string="${svr.root}" property="tempdir2">
+            <replace regex="\\" replacement="/"/>
+        </stringutil>
+    <!--  now replace $(AE_SVR) for actual path -->
+        <stringutil string="${dirlist}" property="tempdir">
+            <replace regex="\$\(AE_SVR\)" replacement="${tempdir2}"/>
+        </stringutil>
+
+<var name="appname" value="PD"/>
+<foreach param="ap.dir" target="clean" trim="true" inheritall="true">
+<path>
+<dirset dir="${tempdir}" />
+</path>
+</foreach>
+</target>
+
+<!-- NEW TARGET MEANT TO CLEAN WHILE RESPECTING THE HIERARCHY-->
+    <target name="clean" description="Clean while respecting the hierarchy in the properties files.">  
+
+
+
+        <stringutil string="${tempdir}" property="strlength">
+            <length/>
+        </stringutil>
+
+        <stringutil string="${ap.dir}/" property="dirto">
+            <substring beginindex="${strlength}"/>
+       </stringutil>
+ 
+    <if>
+      <equals arg1="y" arg2="${ap.del}"/>
+    <then>
+    <echo message="Deleting Archived Process Files older than ${ap.daystokeep} days. "/>
+    <echo message="Directory: ${tempdir}"/>
+      <purge test="false" keep="${ap.daystokeep}" move="false">
+        <fileset dir="${tempdir}${file.separator}${dirto}" includes="*${process.archiving.filename_suffix}"/>
+
+      </purge>
+    </then>
+    <else>
+          <echo message="Moving Archived Process Files older than ${ap.daystokeep} days. "/>
+          <echo message="Directory: ${tempdir}"/>
+          <pmove test="false" keep="${ap.daystokeep}" move="true" path="${ap.bkupdir}${file.separator}${dirto}">
+            <fileset dir="${tempdir}${file.separator}${dirto}" includes="*${process.archiving.filename_suffix}"/>
+          </pmove>
+    </else>
+    </if>
+</target>
+
+</project>

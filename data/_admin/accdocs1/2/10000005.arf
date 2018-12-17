@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appian-report-file>
+  <baseFilters>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+      <apply>false</apply>
+      <standardDeviationCount>0.0</standardDeviationCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+      <apply>false</apply>
+      <completedCount>0</completedCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+      <apply>false</apply>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+      <apply>false</apply>
+      <dayCount>0.0</dayCount>
+    </baseFilter>
+    <baseFilter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+      <apply>false</apply>
+    </baseFilter>
+  </baseFilters>
+  <batchSize>25</batchSize>
+  <columns>
+    <column>
+      <drillPath>
+        <enabled>true</enabled>
+        <expression>pp!id</expression>
+        <linkType>7</linkType>
+      </drillPath>
+      <expression>=pp!name</expression>
+      <formatToken>string</formatToken>
+      <group>false</group>
+      <lastFormatToken>string</lastFormatToken>
+      <localId>0</localId>
+      <name>##!process_instances_per_model.column.name</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=process_status()</expression>
+      <formatToken>processstatusicons</formatToken>
+      <group>false</group>
+      <lastFormatToken>processstatusicons</lastFormatToken>
+      <localId>7</localId>
+      <name>##!process_instances_per_model.column.status</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=pp!initiator</expression>
+      <formatToken>users</formatToken>
+      <group>false</group>
+      <lastFormatToken>users</lastFormatToken>
+      <localId>1</localId>
+      <name>##!process_instances_per_model.column.initiator</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=pp!starttime</expression>
+      <formatToken>datetime</formatToken>
+      <group>false</group>
+      <lastFormatToken>datetime</lastFormatToken>
+      <localId>2</localId>
+      <name>##!process_instances_per_model.column.startTime</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=num_active_tasks()</expression>
+      <formatToken>number</formatToken>
+      <group>false</group>
+      <lastFormatToken>number</lastFormatToken>
+      <localId>3</localId>
+      <name>##!process_instances_per_model.column.numOfActiveTasks</name>
+      <show>true</show>
+    </column>
+    <column>
+      <drillPath>
+        <enabled>false</enabled>
+      </drillPath>
+      <expression>=num_completed_tasks()</expression>
+      <formatToken>number</formatToken>
+      <group>false</group>
+      <lastFormatToken>number</lastFormatToken>
+      <localId>4</localId>
+      <name>##!process_instances_per_model.column.numOfCompletedTasks</name>
+      <show>true</show>
+    </column>
+  </columns>
+  <contextType>1</contextType>
+  <quickFilters>
+    <quickFilter>
+      <defaultItem>0</defaultItem>
+      <items>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>Any Time</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>true</apply>
+              <dayCount>1.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!process_instances_per_model.filter.last24Hours</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>true</apply>
+              <dayCount>7.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!process_instances_per_model.filter.last7Days</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>true</apply>
+              <dayCount>30.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!process_instances_per_model.filter.last30Days</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>true</apply>
+              <dayCount>365.25</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!process_instances_per_model.filter.last365Days</name>
+        </item>
+      </items>
+      <name>Started</name>
+      <selectedItem>0</selectedItem>
+    </quickFilter>
+    <quickFilter>
+      <defaultItem>0</defaultItem>
+      <items>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>7</columnLocalId>
+              <comparison>5</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">1</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>7</columnLocalId>
+              <comparison>5</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">3</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!process_instances_per_model.filter.allUnfinishedProcesses</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.SimpleColumnFilter">
+              <apply>true</apply>
+              <columnLocalId>7</columnLocalId>
+              <comparison>4</comparison>
+              <constant>
+                <instanceType>1</instanceType>
+                <multiple>0</multiple>
+                <type>1</type>
+                <typeRef>
+                  <id>1</id>
+                </typeRef>
+                <value javaclass="java.lang.Long">4</value>
+              </constant>
+              <reportPortletFilter>false</reportPortletFilter>
+            </filter>
+          </filters>
+          <name>##!process_instances_per_model.filter.onlyPausedByException</name>
+        </item>
+        <item>
+          <filters>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.CompletedFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.OutsideNStandardDeviationsFilter">
+              <apply>false</apply>
+              <standardDeviationCount>0.0</standardDeviationCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNCompletedFilter">
+              <apply>false</apply>
+              <completedCount>0</completedCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.AheadOfScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.RunningFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.BehindScheduleFilter">
+              <apply>false</apply>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.LastNDaysFilter">
+              <apply>false</apply>
+              <dayCount>0.0</dayCount>
+            </filter>
+            <filter javaclass="com.appiancorp.suiteapi.process.analytics2.DueTodayFilter">
+              <apply>false</apply>
+            </filter>
+          </filters>
+          <name>##!process_instances_per_model.filter.allProcessInstances</name>
+        </item>
+      </items>
+      <name>Status</name>
+      <selectedItem>0</selectedItem>
+    </quickFilter>
+  </quickFilters>
+  <recursive>false</recursive>
+  <sortColumnLocalId>2</sortColumnLocalId>
+  <sortOrder>1</sortOrder>
+  <startIndex>0</startIndex>
+  <type>1</type>
+  <description>##!process_instances_per_model.description</description>
+  <displayThresholds>false</displayThresholds>
+  <displayType>0</displayType>
+  <name>##!process_instances_per_model</name>
+  <quickFilterDisplay>1</quickFilterDisplay>
+  <showLegend>true</showLegend>
+  <showQuickFiltersInToolbar>true</showQuickFiltersInToolbar>
+  <supportedTypes>
+    <supportedType>0</supportedType>
+    <supportedType>1</supportedType>
+    <supportedType>2</supportedType>
+    <supportedType>3</supportedType>
+  </supportedTypes>
+  <thresholdColumnLocalId>3</thresholdColumnLocalId>
+  <thresholdColumnName>Performance</thresholdColumnName>
+  <thresholds>
+    <threshold>
+      <defaultIconName>indicatorgreen</defaultIconName>
+      <icon>9</icon>
+      <label>0</label>
+      <upperBound>1.0</upperBound>
+    </threshold>
+    <threshold>
+      <defaultIconName>indicatoryellow</defaultIconName>
+      <icon>11</icon>
+      <label>1</label>
+      <upperBound>2.0</upperBound>
+    </threshold>
+    <threshold>
+      <defaultIconName>indicatorred</defaultIconName>
+      <icon>10</icon>
+      <label>2</label>
+    </threshold>
+  </thresholds>
+  <useCustomToolbar>false</useCustomToolbar>
+  <useDefaultBarGraphXML>true</useDefaultBarGraphXML>
+  <useDefaultLineGraphXML>true</useDefaultLineGraphXML>
+  <useDefaultPieGraphXML>true</useDefaultPieGraphXML>
+</appian-report-file>
+
