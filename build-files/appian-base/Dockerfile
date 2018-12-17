@@ -82,6 +82,7 @@ COPY --from=installer-base --chown=appian $CATALINA_HOME $CATALINA_HOME
 WORKDIR $APPIAN_HOME
 
 COPY --chown=appian dockerize.sh $APPIAN_HOME
+RUN chmod +x $APPIAN_HOME/dockerize.sh
 RUN dos2unix $APPIAN_HOME/dockerize.sh
 
 HEALTHCHECK --interval=3s --timeout=2s --retries=300 \
